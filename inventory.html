@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventori - Manajemen Bengkel & Steam</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --app-bg: #eef2f7;
+            --panel-bg: #ffffff;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --brand: #0ea5e9;
+            --brand-2: #2563eb;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            background: radial-gradient(1200px 600px at 10% -10%, #e0f2fe 0%, transparent 60%),
+                        radial-gradient(900px 500px at 90% 10%, #dbeafe 0%, transparent 55%),
+                        var(--app-bg);
+            color: var(--ink);
+        }
+
+        .card-panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .soft-shadow {
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: #7dd3fc;
+            background: rgba(148, 163, 184, 0.08);
+        }
+
+        .nav-active {
+            color: #ffffff;
+            background: rgba(148, 163, 184, 0.14);
+            border-left: 3px solid #38bdf8;
+        }
+
+        .table-head {
+            background: #0f172a;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="leading-normal tracking-normal">
+
+    <div class="flex flex-col md:flex-row">
+        <!-- Sidebar -->
+        <div class="bg-slate-900 shadow-xl h-16 fixed bottom-0 md:relative md:h-screen z-10 w-full md:w-64 flex md:flex-col justify-between md:justify-start">
+            <div class="md:mt-12 md:w-48 md:mx-auto px-4 md:px-0 text-center md:text-left">
+                <h1 class="text-white text-xl md:text-2xl font-extrabold hidden md:block">Bengkel<span class="text-sky-400">App</span></h1>
+            </div>
+            <ul class="flex md:flex-col text-white w-full md:mt-8">
+                <li class="flex-1 md:w-full">
+                    <a href="index.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-tachometer-alt pr-0 md:pr-3"></i><span class="hidden md:inline">Dashboard</span></a>
+                </li>
+                <li class="flex-1 md:w-full">
+                    <a href="pos.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-cash-register pr-0 md:pr-3"></i><span class="hidden md:inline">Kasir & Transaksi</span></a>
+                </li>
+                <li class="flex-1 md:w-full">
+                    <a href="inventory.html" class="nav-link nav-active block py-3 md:py-4 px-4"><i class="fas fa-boxes pr-0 md:pr-3"></i><span class="hidden md:inline">Inventori</span></a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1 mt-12 md:mt-2 pb-24 md:pb-5">
+            <div class="pt-6 px-6">
+                <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 soft-shadow text-2xl text-white">
+                    <h1 class="font-bold pl-1">Inventori & Stok Barang</h1>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Add Item Form -->
+                <div class="card-panel rounded-2xl p-6 mb-8">
+                    <h2 class="text-xl font-bold mb-4" id="form-title">Tambah Stok Barang Baru</h2>
+                    <form id="form-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" id="inv-id">
+                        <div>
+                            <label class="block text-slate-700 text-sm font-semibold mb-2">Nama Barang (Oli/Sparepart/Sabun)</label>
+                            <input type="text" id="inv-name" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-sm font-semibold mb-2">Kategori</label>
+                            <select id="inv-category" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                                <option value="oli">Oli & Pelumas</option>
+                                <option value="ban">Ban & Velg</option>
+                                <option value="rem">Pengereman</option>
+                                <option value="listrik">Kelistrikan (Busi, Aki, dll)</option>
+                                <option value="mesin">Mesin & Transmisi (CVT, Rantai)</option>
+                                <option value="aksesoris">Aksesoris Bengkel</option>
+                                <option value="steam">Perlengkapan Steam</option>
+                                <option value="lainnya">Lain-lain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-sm font-semibold mb-2">Harga Beli (Modal)</label>
+                            <input type="number" id="inv-buy-price" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-sm font-semibold mb-2">Harga Jual</label>
+                            <input type="number" id="inv-sell-price" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-sm font-semibold mb-2">Stok Tersedia</label>
+                            <input type="number" id="inv-stock" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                        </div>
+                        <div class="md:col-span-2 text-right mt-4">
+                            <button type="button" id="btn-cancel-edit" class="hidden bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline mr-2">Batal</button>
+                            <button type="submit" id="btn-save-item" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
+                                Simpan Barang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Inventory List -->
+                <div class="card-panel rounded-2xl p-6">
+                    <h2 class="text-xl font-bold mb-4">Daftar Barang</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="table-head">
+                                <tr>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Nama Barang</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Kategori</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Stok</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Modal</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Harga Jual</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Keuntungan (Estimasi)</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-list" class="text-gray-700">
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
