@@ -87,6 +87,7 @@ function loadStateFirebase() {
     onSnapshot(collection(db, "expenses"), snapshot => {
         state.expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderDashboard();
+        if (typeof renderExpenses === 'function') renderExpenses();
     });
 }
 
@@ -315,6 +316,33 @@ function renderInventory() {
                 opt.textContent = `${item.name} – ${formatRupiah(item.sellPrice)} (Sisa: ${item.stock})`;
                 selectPos.appendChild(opt);
             });
+    }
+}
+
+function renderExpenses() {
+    const tbody = document.getElementById('expenses-list');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    
+    // Sort by date descending
+    const sorted = [...state.expenses].sort((a, b) => b.date.localeCompare(a.date));
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">
+            Belum ada riwayat pengeluaran.</td></tr>`;
+    } else {
+        sorted.forEach(exp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-3 px-4 text-left text-sm">${exp.date}</td>
+                <td class="py-3 px-4 text-left text-sm font-medium">${exp.itemName}</td>
+                <td class="py-3 px-4 text-center text-sm font-bold text-rose-500">+${exp.qty}</td>
+                <td class="py-3 px-4 text-right text-sm">${formatRupiah(exp.buyPrice)}</td>
+                <td class="py-3 px-4 text-right text-sm font-bold text-rose-600">${formatRupiah(exp.totalExpense)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 }
 
@@ -748,3 +776,4 @@ window.applyDateFilter  = applyDateFilter;
 window.editItem         = editItem;
 window.deleteItem       = deleteItem;
 window.removeCart       = removeCart;
+window.renderExpenses   = renderExpenses;

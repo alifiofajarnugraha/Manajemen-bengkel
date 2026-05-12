@@ -133,7 +133,7 @@
                 </div>
 
                 <!-- Inventory List -->
-                <div class="card-panel rounded-2xl p-4 md:p-6">
+                <div class="card-panel rounded-2xl p-4 md:p-6 mb-6">
                     <h2 class="text-lg md:text-xl font-bold mb-4">Daftar Barang</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white whitespace-nowrap">
@@ -149,6 +149,27 @@
                                 </tr>
                             </thead>
                             <tbody id="inventory-list" class="text-gray-700">
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Expenses List -->
+                <div class="card-panel rounded-2xl p-4 md:p-6">
+                    <h2 class="text-lg md:text-xl font-bold mb-4">Riwayat Pengeluaran (Restock)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white whitespace-nowrap">
+                            <thead class="table-head">
+                                <tr>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Tanggal</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Nama Barang</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Jumlah</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Harga Satuan</th>
+                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Total Pengeluaran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-list" class="text-gray-700">
                                 <!-- Data will be loaded via JS -->
                             </tbody>
                         </table>
