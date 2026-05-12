@@ -116,54 +116,70 @@
                 <div class="w-full px-6 pt-4" id="notification-area"></div>
 
                 <!-- Metrics -->
-                <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                    <div class="card-panel rounded-2xl p-5">
+                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-5">
                         <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-4">
-                                <div class="rounded-2xl p-4 bg-emerald-500"><i class="fas fa-wallet fa-2x fa-inverse"></i></div>
+                            <div class="flex-shrink pr-3 md:pr-4">
+                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-emerald-500"><i class="fas fa-wallet text-xl md:text-3xl text-white"></i></div>
                             </div>
                             <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600">Keuntungan Hari Ini</h2>
-                                <p class="font-bold text-3xl" id="daily-profit">Rp 0</p>
+                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Keuntungan Hari Ini</h2>
+                                <p class="font-bold text-xl md:text-2xl mt-1" id="daily-profit">Rp 0</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Gaji Tukang Bengkel -->
-                <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                    <div class="card-panel rounded-2xl p-5">
+                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-5">
                         <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-4">
-                                <div class="rounded-2xl p-4 bg-blue-600"><i class="fas fa-tools fa-2x fa-inverse"></i></div>
+                            <div class="flex-shrink pr-3 md:pr-4">
+                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-blue-600"><i class="fas fa-tools text-xl md:text-3xl text-white"></i></div>
                             </div>
                             <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600">Gaji Tukang Bengkel (Bapak A)</h2>
-                                <p class="font-bold text-3xl" id="salary-mechanic">Rp 0</p>
+                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Gaji Bapak A (Bengkel)</h2>
+                                <p class="font-bold text-xl md:text-2xl mt-1" id="salary-mechanic">Rp 0</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Gaji Tukang Steam -->
-                <div class="w-full md:w-1/2 xl:w-1/3 p-6">
-                    <div class="card-panel rounded-2xl p-5">
+                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-5">
                         <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-4">
-                                <div class="rounded-2xl p-4 bg-indigo-600"><i class="fas fa-tint fa-2x fa-inverse"></i></div>
+                            <div class="flex-shrink pr-3 md:pr-4">
+                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-indigo-600"><i class="fas fa-tint text-xl md:text-3xl text-white"></i></div>
                             </div>
                             <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600">Gaji Tukang Steam (Bapak B)</h2>
-                                <p class="font-bold text-3xl" id="salary-steam">Rp 0</p>
+                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Gaji Bapak B (Steam)</h2>
+                                <p class="font-bold text-xl md:text-2xl mt-1" id="salary-steam">Rp 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Pengeluaran -->
+                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-5">
+                        <div class="flex flex-row items-center">
+                            <div class="flex-shrink pr-3 md:pr-4">
+                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-rose-500"><i class="fas fa-shopping-cart text-xl md:text-3xl text-white"></i></div>
+                            </div>
+                            <div class="flex-1 text-right md:text-center">
+                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Total Pengeluaran</h2>
+                                <p class="font-bold text-xl md:text-2xl mt-1" id="total-expense">Rp 0</p>
+                                <p class="text-xs text-gray-500 font-semibold" id="total-expense-items">0 Barang</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Grafik Area -->
-                <div class="w-full p-6">
-                    <div class="card-panel rounded-2xl p-5">
-                        <h2 class="font-bold text-slate-800 mb-4">Grafik Keuntungan & Gaji Harian</h2>
+                <div class="w-full p-4 md:p-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-5">
+                        <h2 class="font-bold text-slate-800 mb-4 text-sm md:text-base">Grafik Keuntungan & Gaji Harian</h2>
                         <div class="relative h-64 w-full">
                             <canvas id="dashboardChart" class="w-full h-full"></canvas>
                         </div>

@@ -88,11 +88,11 @@
                 </div>
             </div>
 
-            <div class="flex flex-col xl:flex-row p-6 gap-6">
+            <div class="flex flex-col xl:flex-row p-4 md:p-6 gap-4 md:gap-6">
                 <!-- Transaction Form Area -->
                 <div class="w-full xl:w-2/3">
-                    <div class="card-panel rounded-2xl p-6">
-                        <h2 class="text-xl font-bold mb-4">Input Layanan / Jasa</h2>
+                    <div class="card-panel rounded-2xl p-4 md:p-6">
+                        <h2 class="text-lg md:text-xl font-bold mb-4">Input Layanan / Jasa</h2>
                         <form id="form-transaction">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
@@ -114,9 +114,13 @@
                                         <!-- Looped via JS -->
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="block text-slate-700 text-sm font-semibold mb-2">Biaya Jasa (Gaji Masuk Pekerja)</label>
+                                <div id="container-service-fee">
+                                    <label id="pos-service-fee-label" class="block text-slate-700 text-sm font-semibold mb-2">Biaya Jasa (Gaji Masuk Pekerja)</label>
                                     <input type="number" id="pos-service-fee" placeholder="0" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
+                                </div>
+                                <div id="container-qty" style="display: none;">
+                                    <label class="block text-slate-700 text-sm font-semibold mb-2">Jumlah Cuci (Steam)</label>
+                                    <input type="number" id="pos-qty" placeholder="1" value="1" min="1" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
                                 </div>
                                 <div>
                                     <button type="button" id="btn-add-item" class="bg-emerald-500 hover:bg-emerald-600 w-full text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
@@ -127,24 +131,26 @@
                         </form>
                     </div>
 
-                    <div class="card-panel rounded-2xl p-6 mt-6">
+                    <div class="card-panel rounded-2xl p-4 md:p-6 mt-4 md:mt-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold">Keranjang & Ringkasan</h2>
+                            <h2 class="text-lg md:text-xl font-bold">Keranjang & Ringkasan</h2>
                         </div>
-                        <table class="min-w-full bg-white mb-4">
-                            <thead class="table-head">
-                                <tr>
-                                    <th class="py-2 px-4 text-left">Deskripsi</th>
-                                    <th class="py-2 px-4 text-right">Barang/Part</th>
-                                    <th class="py-2 px-4 text-right">Biaya Jasa</th>
-                                    <th class="py-2 px-4 text-right">Subtotal</th>
-                                    <th class="py-2 px-4 text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cart-list" class="text-gray-700">
-                                <!-- Cart Items via JS -->
-                            </tbody>
-                        </table>
+                        <div class="overflow-x-auto mb-4">
+                            <table class="min-w-full bg-white whitespace-nowrap">
+                                <thead class="table-head">
+                                    <tr>
+                                        <th class="py-2 px-4 text-left text-sm">Deskripsi</th>
+                                        <th class="py-2 px-4 text-right text-sm">Barang/Part</th>
+                                        <th class="py-2 px-4 text-right text-sm">Biaya Jasa</th>
+                                        <th class="py-2 px-4 text-right text-sm">Subtotal</th>
+                                        <th class="py-2 px-4 text-center text-sm">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-list" class="text-gray-700 text-sm">
+                                    <!-- Cart Items via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                         <div class="text-right border-t pt-4">
                             <h2 class="text-2xl font-bold text-slate-800">Total: <span id="cart-total">Rp 0</span></h2>
                             <button id="btn-checkout" class="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
@@ -156,8 +162,8 @@
 
                 <!-- History Area -->
                 <div class="w-full xl:w-1/3">
-                    <div class="card-panel rounded-2xl p-6">
-                        <h2 class="text-xl font-bold mb-4">Riwayat Hari Ini</h2>
+                    <div class="card-panel rounded-2xl p-4 md:p-6">
+                        <h2 class="text-lg md:text-xl font-bold mb-4">Riwayat Hari Ini</h2>
                         <ul id="transaction-history" class="divide-y divide-slate-200">
                             <!-- Transactions via JS -->
                         </ul>

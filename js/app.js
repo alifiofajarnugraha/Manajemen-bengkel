@@ -35,6 +35,7 @@ let state = {
         { id: 'mechanic', name: 'Bapak A (Bengkel)', salaryToday: 0 },
         { id: 'steam', name: 'Bapak B (Steam)', salaryToday: 0 }
     ],
+    expenses: [],
     lastUpdated: getCurrentDateString()
 };
 
@@ -76,6 +77,15 @@ async function loadStateFirebase() {
         renderDashboard();
         renderHistory();
     });
+
+    // Listen to expense changes
+    onSnapshot(collection(db, "expenses"), (querySnapshot) => {
+        state.expenses = [];
+        querySnapshot.forEach((doc) => {
+             state.expenses.push({ id: doc.id, ...doc.data() });
+        });
+        renderDashboard();
+    });
 }
 
 function renderFormatRupiah(number) {
@@ -96,6 +106,8 @@ function renderDashboard() {
     const elProfit = document.getElementById('daily-profit');
     const elMechanic = document.getElementById('salary-mechanic');
     const elSteam = document.getElementById('salary-steam');
+    const elTotalExpense = document.getElementById('total-expense');
+    const elTotalExpenseItems = document.getElementById('total-expense-items');
     const elNotifications = document.getElementById('notification-area');
 
     if (!elProfit) return; // Not on dashboard page
@@ -116,6 +128,8 @@ function renderDashboard() {
     let totalProfit = 0;
     let totalMechanic = 0;
     let totalSteam = 0;
+    let totalExpenseAmount = 0;
+    let totalExpenseQty = 0;
     
     // Process Chart Data
     const chartLabels = [];
@@ -152,6 +166,13 @@ function renderDashboard() {
         }
     });
 
+    state.expenses.forEach(e => {
+        if (e.date >= filterStartDate && e.date <= filterEndDate) {
+            totalExpenseAmount += e.totalExpense;
+            totalExpenseQty += e.qty;
+        }
+    });
+
     Object.keys(chartMap).sort().forEach(date => {
         chartLabels.push(date);
         profitData.push(chartMap[date].profit);
@@ -162,6 +183,8 @@ function renderDashboard() {
     elProfit.innerText = renderFormatRupiah(totalProfit);
     elMechanic.innerText = renderFormatRupiah(totalMechanic);
     elSteam.innerText = renderFormatRupiah(totalSteam);
+    if(elTotalExpense) elTotalExpense.innerText = renderFormatRupiah(totalExpenseAmount);
+    if(elTotalExpenseItems) elTotalExpenseItems.innerText = totalExpenseQty + ' Barang';
 
     // Chart.js render
     const ctx = document.getElementById('dashboardChart');
@@ -255,6 +278,9 @@ if (formInventory) {
 
         if (idInput) {
             // Mode Edit
+            const oldItem = state.inventory.find(i => i.id === idInput);
+            const addedStock = oldItem ? (stockInput - oldItem.stock) : 0;
+
             updateDoc(doc(db, "inventory", idInput), {
                 name: nameInput,
                 category: categoryInput,
@@ -262,6 +288,15 @@ if (formInventory) {
                 sellPrice: sellPriceInput,
                 stock: stockInput
             }).then(() => {
+                if (addedStock > 0) {
+                    addDoc(collection(db, "expenses"), {
+                        date: getCurrentDateString(),
+                        itemName: nameInput,
+                        qty: addedStock,
+                        buyPrice: buyPriceInput,
+                        totalExpense: addedStock * buyPriceInput
+                    });
+                }
                 alert('Barang berhasil diperbarui!');
                 resetForm();
             }).catch(e => alert("Error: " + e.message));
@@ -274,6 +309,15 @@ if (formInventory) {
                 sellPrice: sellPriceInput,
                 stock: stockInput
             }).then(() => {
+                if (stockInput > 0) {
+                    addDoc(collection(db, "expenses"), {
+                        date: getCurrentDateString(),
+                        itemName: nameInput,
+                        qty: stockInput,
+                        buyPrice: buyPriceInput,
+                        totalExpense: stockInput * buyPriceInput
+                    });
+                }
                 alert('Barang berhasil ditambahkan!');
                 resetForm();
             }).catch(e => alert("Error: " + e.message));
@@ -362,20 +406,35 @@ function removeCart(index) {
     renderCart();
 }
 
+const posWorker = document.getElementById('pos-worker');
+const containerServiceFee = document.getElementById('container-service-fee');
+const containerQty = document.getElementById('container-qty');
+const posItem = document.getElementById('pos-item');
+
+if (posWorker) {
+    // Initial state check
+    if (posWorker.value === 'steam') {
+        if(containerServiceFee) containerServiceFee.style.display = 'none';
+        if(containerQty) containerQty.style.display = 'block';
+    }
+
+    posWorker.addEventListener('change', (e) => {
+        if (e.target.value === 'steam') {
+            if(containerServiceFee) containerServiceFee.style.display = 'none';
+            if(containerQty) containerQty.style.display = 'block';
+        } else {
+            if(containerServiceFee) containerServiceFee.style.display = 'block';
+            if(containerQty) containerQty.style.display = 'none';
+        }
+    });
+}
+
 const btnAddItem = document.getElementById('btn-add-item');
 if (btnAddItem) {
     btnAddItem.addEventListener('click', () => {
         const workerId = document.getElementById('pos-worker').value;
         const itemId = document.getElementById('pos-item').value;
-        const serviceFeeInput = document.getElementById('pos-service-fee').value;
         
-        let serviceFee = parseInt(serviceFeeInput || 0);
-
-        if(!itemId && serviceFee <= 0) {
-            alert('Isi barang atau biaya jasa terlebih dahulu!');
-            return;
-        }
-
         let item = null;
         if(itemId) {
             item = state.inventory.find(i => i.id === itemId);
@@ -386,12 +445,45 @@ if (btnAddItem) {
         let sellPrice = item ? item.sellPrice : 0;
         let buyPrice = item ? item.buyPrice : 0;
         let itemName = item ? item.name : 'Jasa Murni';
+        let itemCode = item ? item.id : null;
+        let serviceFee = 0;
+
+        if (workerId === 'steam') {
+            const qtyInput = document.getElementById('pos-qty');
+            const qty = parseInt(qtyInput ? (qtyInput.value || 1) : 1);
+            
+            const steamProfit = 10000 * qty;
+            const steamFee = 5000 * qty;
+            
+            if (item) {
+                sellPrice += steamProfit;
+                itemName += ' + Cuci Steam (' + qty + 'x)';
+            } else {
+                sellPrice = steamProfit;
+                buyPrice = 0;
+                itemName = 'Cuci Steam (' + qty + 'x)';
+                itemCode = 'steam_service';
+            }
+            serviceFee = steamFee;
+            
+            if(qtyInput) qtyInput.value = 1;
+
+        } else {
+            const serviceFeeInput = document.getElementById('pos-service-fee').value;
+            serviceFee = parseInt(serviceFeeInput || 0);
+
+            if(!itemId && serviceFee <= 0) {
+                alert('Isi barang atau biaya jasa terlebih dahulu!');
+                return;
+            }
+            document.getElementById('pos-service-fee').value = '';
+        }
 
         cartCounter.push({
             date: getCurrentDateString(),
             workerId: worker.id,
             workerName: worker.name,
-            itemCode: item ? item.id : null,
+            itemCode: itemCode,
             itemName: itemName,
             sellPrice: sellPrice,
             buyPrice: buyPrice,
@@ -399,7 +491,6 @@ if (btnAddItem) {
             total: sellPrice + serviceFee
         });
 
-        document.getElementById('pos-service-fee').value = '';
         renderCart();
     });
 }
@@ -487,7 +578,7 @@ function exportToExcel() {
         return;
     }
 
-    if (state.transactions.length === 0 && state.inventory.length === 0) {
+    if (state.transactions.length === 0 && state.inventory.length === 0 && (!state.expenses || state.expenses.length === 0)) {
         alert("Tidak ada data untuk di-export.");
         return;
     }
@@ -511,6 +602,20 @@ function exportToExcel() {
         XLSX.utils.book_append_sheet(workbook, worksheetTransactions, "Riwayat Transaksi");
     }
 
+    if (state.expenses && state.expenses.length > 0) {
+        // Format data for restock expenses
+        const exportExpenses = state.expenses.map(e => ({
+            Tanggal_Restock: e.date,
+            Nama_Barang: e.itemName,
+            Jumlah_Ditambahkan: e.qty,
+            Harga_Beli_Satuan: e.buyPrice,
+            Total_Pengeluaran: e.totalExpense
+        }));
+
+        const worksheetExpenses = XLSX.utils.json_to_sheet(exportExpenses);
+        XLSX.utils.book_append_sheet(workbook, worksheetExpenses, "Riwayat Pengeluaran");
+    }
+
     if (state.inventory.length > 0) {
         // Format data for inventory
         const exportDate = getCurrentDateString();
@@ -532,12 +637,16 @@ function exportToExcel() {
 }
 
 async function resetTransactions() {
-    if (confirm("AWAS! Anda akan menghapus seluruh data Transaksi dan Gaji. Pastikan Anda sudah Export ke Excel terlebih dahulu. Lanjutkan?")) {
+    if (confirm("AWAS! Anda akan menghapus seluruh data Transaksi, Pengeluaran, dan Gaji. Pastikan Anda sudah Export ke Excel terlebih dahulu. Lanjutkan?")) {
         const querySnapshot = await getDocs(collection(db, "transactions"));
         querySnapshot.forEach((d) => {
             deleteDoc(doc(db, "transactions", d.id));
         });
-        alert("Semua data transaksi di-reset menjadi 0.");
+        const expSnapshot = await getDocs(collection(db, "expenses"));
+        expSnapshot.forEach((d) => {
+            deleteDoc(doc(db, "expenses", d.id));
+        });
+        alert("Semua data transaksi dan pengeluaran di-reset menjadi 0.");
     }
 }
 
