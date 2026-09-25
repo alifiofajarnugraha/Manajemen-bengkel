@@ -1,23 +1,8 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { db } from "./firebase-init.js";
 import {
-    getFirestore,
     collection, addDoc, getDocs,
     updateDoc, doc, deleteDoc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// ── Firebase config ──────────────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyBu9L9cU8uIQiVQLDUxQR1oiac8oOZH17A",
-    authDomain: "projek-manajemen-bengkel.firebaseapp.com",
-    projectId: "projek-manajemen-bengkel",
-    storageBucket: "projek-manajemen-bengkel.firebasestorage.app",
-    messagingSenderId: "612604542103",
-    appId: "1:612604542103:web:63794823d37c13e43bfdd2",
-    measurementId: "G-ZX2QBQ67MR"
-};
-
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

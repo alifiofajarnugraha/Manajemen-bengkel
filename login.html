@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login – TriUsaha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .login-card {
+            background: #ffffff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .brand-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: #0f172a;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .brand-name span { color: #38bdf8; }
+        .brand-sub {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 32px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #0f172a;
+            background: #f8fafc;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .form-input:focus { border-color: #38bdf8; background: white; }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: #0ea5e9;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 12px;
+        }
+        .btn-login:hover { background: #0284c7; transform: translateY(-1px); }
+        .btn-login:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+        #login-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-name">Tri<span>Usaha</span></div>
+        <div class="brand-sub">Sistem Manajemen Terpadu</div>
+        
+        <div id="login-error"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label class="form-label" for="email"><i class="fas fa-envelope text-sky-500 mr-1"></i> Email Akses</label>
+                <input type="email" id="email" class="form-input" required placeholder="admin@triusaha.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password"><i class="fas fa-lock text-sky-500 mr-1"></i> Kata Sandi</label>
+                <input type="password" id="password" class="form-input" required placeholder="Masukkan kata sandi">
+            </div>
+            <button type="submit" id="btn-login" class="btn-login">Masuk Aplikasi <i class="fas fa-arrow-right ml-1"></i></button>
+        </form>
+        
+        <div style="text-align:center;margin-top:24px;font-size:11px;color:#94a3b8;font-weight:600;">
+            Akses dibatasi. Silakan hubungi pemilik jika Anda tidak memiliki akun.
+        </div>
+    </div>
+
+    <!-- Script Auth Check -->
+    <script type="module" src="js/auth.js"></script>
+    
+    <!-- Script Login Proses -->
+    <script type="module">
+        import { auth } from './js/firebase-init.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
+            const errorDiv = document.getElementById('login-error');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memeriksa...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Redirect otomatis dihandle oleh auth.js
+                    btn.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+                })
+                .catch((error) => {
+                    btn.innerHTML = 'Masuk Aplikasi <i class="fas fa-arrow-right ml-1"></i>';
+                    btn.disabled = false;
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerText = 'Email atau kata sandi salah!';
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+</html>

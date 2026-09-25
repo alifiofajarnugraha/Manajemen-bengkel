@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script type="module" src="js/auth.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -162,6 +163,9 @@ a { text-decoration: none; }
         <a href="fotocopy.html" class="nav-item active"><span class="nav-icon ni-violet"><i class="fas fa-print"></i></span>Fotocopy & ATK</a>
     </nav>
     <div style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: auto;">
+        <button onclick="logout()" class="nav-item" style="width:100%;margin:0 0 16px 0;background:rgba(244,63,94,0.1);color:#f43f5e;justify-content:center;font-weight:700;cursor:pointer;border:none;">
+            <i class="fas fa-sign-out-alt" style="margin-right:8px;"></i> Logout
+        </button>
         <div style="font-size: 12px; color: #94a3b8; font-weight: 700;">TriUsaha v2.0</div>
         <div style="font-size: 11px; color: #475569; margin-top: 3px;">Powered by Firebase</div>
         <div style="font-size: 13px; color: #64748b; font-weight: 800; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; letter-spacing: 1px;">&copy; <span style="color:#38bdf8;">AFN</span></div>
