@@ -123,25 +123,6 @@ PROJEK MANAJEMEN BENGKEL/
 └── README.md
 ```
 
----
 
-## 🔒 Catatan Keamanan Firebase
-
-Pastikan **Firestore Security Rules** Anda mengizinkan akses ke semua koleksi. Untuk development/testing gunakan:
-
-```js
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-> ⚠️ Untuk produksi/publik, sebaiknya tambahkan autentikasi Firebase agar data lebih aman.
-
----
 
 *© AFN – TriUsaha v2.0 | Dibuat untuk memudahkan pengelolaan usaha Bengkel, Steam, dan Fotocopy.*
