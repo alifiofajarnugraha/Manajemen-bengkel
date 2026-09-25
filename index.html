@@ -3,193 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Manajemen Bengkel & Steam</title>
+    <title>Dashboard – TriUsaha</title>
+    <meta name="description" content="Ringkasan keuntungan, gaji, dan laporan bengkel, steam, dan fotocopy hari ini.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --app-bg: #eef2f7;
-            --panel-bg: #ffffff;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --brand: #0ea5e9;
-            --brand-2: #2563eb;
-        }
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --sidebar: #0f172a;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --sky: #0ea5e9; --sky-d: #0284c7;
+    --amber: #f59e0b; --amber-d: #d97706;
+    --emerald: #10b981; --emerald-d: #059669;
+    --violet: #8b5cf6; --violet-d: #7c3aed;
+    --rose: #f43f5e;
+    --sidebar-w: 256px;
+}
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+a { text-decoration: none; }
 
-        body {
-            font-family: "Plus Jakarta Sans", sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, #e0f2fe 0%, transparent 60%),
-                        radial-gradient(900px 500px at 90% 10%, #dbeafe 0%, transparent 55%),
-                        var(--app-bg);
-            color: var(--ink);
-        }
+/* ─── Sidebar ─────────────────────────── */
+.sidebar {
+    position: fixed; left: 0; top: 0;
+    width: var(--sidebar-w); height: 100vh;
+    background: var(--sidebar);
+    display: flex; flex-direction: column;
+    z-index: 200; overflow-y: auto;
+}
+.sidebar-logo {
+    padding: 28px 20px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.sidebar-logo .app-name {
+    font-size: 21px; font-weight: 900; color: #fff;
+    letter-spacing: -0.5px;
+}
+.sidebar-logo .app-name span { color: #38bdf8; }
+.sidebar-logo .app-sub {
+    font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;
+}
+.sidebar-section-label {
+    font-size: 10px; font-weight: 700; color: #475569;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 16px 20px 8px;
+}
+.nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; margin: 2px 10px;
+    border-radius: 12px;
+    color: #94a3b8; font-weight: 600; font-size: 14px;
+    transition: all 0.18s; cursor: pointer;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.10); color: #fff; }
+.nav-icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; color: white;
+}
+.ni-sky    { background: var(--sky); }
+.ni-amber  { background: var(--amber); }
+.ni-emerald{ background: var(--emerald); }
+.ni-violet { background: var(--violet); }
 
-        .card-panel {
-            background: var(--panel-bg);
-            border: 1px solid rgba(15, 23, 42, 0.06);
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        }
+/* ─── Main Layout ─────────────────────── */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.page-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-        .soft-shadow {
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-        }
+/* ─── Page Header ─────────────────────── */
+.page-header {
+    background: var(--sidebar);
+    border-radius: 20px; padding: 22px 24px;
+    color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.page-header-left h1 { font-size: 22px; font-weight: 800; }
+.page-header-left p  { font-size: 13px; color: #94a3b8; margin-top: 3px; }
+.page-header-right { display: flex; gap: 8px; flex-wrap: wrap; }
 
-        .nav-link {
-            color: #94a3b8;
-            transition: all 0.2s ease;
-        }
+/* ─── Notification Area ───────────────── */
+#notification-area { display: flex; flex-direction: column; gap: 8px; }
+.alert-box {
+    padding: 12px 16px; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    border: 1.5px solid;
+    display: flex; align-items: flex-start; gap: 10px;
+}
+.alert-warning { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+.alert-success { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+.alert-danger  { background: #fff1f2; border-color: #fda4af; color: #9f1239; }
 
-        .nav-link:hover {
-            color: #7dd3fc;
-            background: rgba(148, 163, 184, 0.08);
-        }
+/* ─── Filter Bar ──────────────────────── */
+.filter-bar {
+    background: white; border-radius: 16px;
+    padding: 16px 20px; border: 1px solid var(--border);
+    display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.filter-group { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.filter-action-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-field label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.filter-field input[type=date] {
+    padding: 10px 14px; border: 2px solid var(--border);
+    border-radius: 10px; font-family: inherit; font-size: 14px;
+    color: var(--text); background: #f8fafc; outline: none;
+    transition: border-color 0.18s;
+}
+.filter-field input[type=date]:focus { border-color: var(--sky); background: white; }
 
-        .nav-active {
-            color: #ffffff;
-            background: rgba(148, 163, 184, 0.14);
-            border-left: 3px solid #38bdf8;
-        }
+/* ─── Metric Cards ────────────────────── */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+.metric-card {
+    background: white; border-radius: 18px;
+    padding: 20px; border: 1px solid var(--border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex; align-items: center; gap: 16px;
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+.metric-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); }
+.metric-icon {
+    width: 54px; height: 54px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: white; flex-shrink: 0;
+}
+.metric-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-value { font-size: 20px; font-weight: 900; color: var(--text); margin-top: 4px; line-height: 1.1; }
+.metric-sub   { font-size: 11px; color: #94a3b8; margin-top: 3px; }
 
-        .table-head {
-            background: #0f172a;
-            color: #ffffff;
-        }
-    </style>
+/* ─── Chart Card ──────────────────────── */
+.chart-card {
+    background: white; border-radius: 18px; padding: 24px;
+    border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.chart-card h2 { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.chart-card .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.chart-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ─── Buttons ─────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 18px; border-radius: 12px;
+    font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: all 0.18s;
+    border: none; font-family: inherit; line-height: 1;
+    white-space: nowrap;
+}
+.btn-sky     { background: var(--sky);     color: white; }
+.btn-sky:hover    { background: var(--sky-d); transform: translateY(-1px); }
+.btn-amber   { background: var(--amber);   color: white; }
+.btn-amber:hover  { background: var(--amber-d); transform: translateY(-1px); }
+.btn-emerald { background: var(--emerald); color: white; }
+.btn-emerald:hover{ background: var(--emerald-d); transform: translateY(-1px); }
+.btn-violet  { background: var(--violet);  color: white; }
+.btn-violet:hover { background: var(--violet-d); transform: translateY(-1px); }
+.btn-rose    { background: var(--rose);    color: white; }
+.btn-rose:hover   { background: #e11d48; transform: translateY(-1px); }
+.btn-slate   { background: #334155;        color: white; }
+.btn-slate:hover  { background: #1e293b; transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--muted); }
+.btn-outline:hover{ background: #f8fafc; }
+
+/* ─── Bottom Nav (Mobile) ─────────────── */
+.bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 70px; background: var(--sidebar);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    z-index: 200; overflow-x: auto;
+}
+.bottom-nav-inner {
+    display: flex; height: 100%;
+    min-width: max-content; width: 100%;
+}
+.bnav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #475569; font-size: 10px; font-weight: 700;
+    gap: 4px; padding: 8px 4px; min-width: 70px;
+    transition: color 0.18s;
+}
+.bnav-item i { font-size: 19px; }
+.bnav-item.active { color: #fff; }
+.bnav-item.active.bnav-sky    i { color: #38bdf8; }
+.bnav-item.active.bnav-amber  i { color: #fbbf24; }
+.bnav-item.active.bnav-emerald i { color: #34d399; }
+.bnav-item.active.bnav-violet i { color: #c4b5fd; }
+
+/* ─── Responsive ──────────────────────── */
+@media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding-bottom: 80px; }
+    .bottom-nav { display: block; }
+    .page-content { padding: 14px; gap: 14px; }
+    .page-header { padding: 16px 18px; }
+    .page-header-left h1 { font-size: 18px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .metric-card { padding: 14px; gap: 12px; }
+    .metric-icon { width: 44px; height: 44px; font-size: 17px; border-radius: 11px; }
+    .metric-value { font-size: 16px; }
+}
+@media (max-width: 480px) {
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .metric-value { font-size: 14px; }
+    .filter-bar { padding: 14px; }
+}
+</style>
 </head>
-<body class="leading-normal tracking-normal">
+<body>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="bg-slate-900 shadow-xl h-16 fixed bottom-0 md:relative md:h-screen z-10 w-full md:w-64 flex md:flex-col justify-between md:justify-start">
-            <div class="md:mt-12 md:w-48 md:mx-auto px-4 md:px-0 text-center md:text-left">
-                <h1 class="text-white text-xl md:text-2xl font-extrabold hidden md:block">Bengkel<span class="text-sky-400">App</span></h1>
-            </div>
-            <ul class="flex md:flex-col text-white w-full md:mt-8">
-                <li class="flex-1 md:w-full">
-                    <a href="index.html" class="nav-link nav-active block py-3 md:py-4 px-4"><i class="fas fa-tachometer-alt pr-0 md:pr-3"></i><span class="hidden md:inline">Dashboard</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="pos.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-cash-register pr-0 md:pr-3"></i><span class="hidden md:inline">Kasir & Transaksi</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="inventory.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-boxes pr-0 md:pr-3"></i><span class="hidden md:inline">Inventori</span></a>
-                </li>
-            </ul>
+<!-- ══ Sidebar (Desktop) ══════════════════════════════ -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="app-name">Tri<span>Usaha</span></div>
+        <div class="app-sub">Bengkel &bull; Steam &bull; Fotocopy</div>
+    </div>
+    <div class="sidebar-section-label">Menu Utama</div>
+    <nav>
+        <a href="index.html" class="nav-item active">
+            <span class="nav-icon ni-sky"><i class="fas fa-tachometer-alt"></i></span>
+            Dashboard
+        </a>
+        <a href="pos.html" class="nav-item">
+            <span class="nav-icon ni-amber"><i class="fas fa-wrench"></i></span>
+            Kasir Bengkel & Steam
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <span class="nav-icon ni-emerald"><i class="fas fa-boxes"></i></span>
+            Inventori Bengkel
+        </a>
+        <a href="fotocopy.html" class="nav-item">
+            <span class="nav-icon ni-violet"><i class="fas fa-print"></i></span>
+            Fotocopy & ATK
+        </a>
+    </nav>
+    <div style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: auto;">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700; letter-spacing: 0.3px;">TriUsaha v2.0</div>
+        <div style="font-size: 11px; color: #475569; margin-top: 3px;">Powered by Firebase</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 800; margin-top: 6px; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">&copy; <span style="color:#38bdf8;">AFN</span></div>
+    </div>
+</aside>
+
+<!-- ══ Main Content ═════════════════════════════════ -->
+<main class="main">
+<div class="page-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1><i class="fas fa-tachometer-alt" style="color:#38bdf8;margin-right:10px;"></i>Dashboard Laporan</h1>
+            <p>Lihat ringkasan keuntungan dan pengeluaran usaha Anda hari ini</p>
         </div>
+        <div class="page-header-right">
+            <button class="btn btn-emerald" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            <button class="btn btn-rose" onclick="resetTransactions()"><i class="fas fa-trash-alt"></i> Reset Riwayat</button>
+        </div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 mt-12 md:mt-2 pb-24 md:pb-5">
-            <div class="pt-6 px-6">
-                <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 soft-shadow text-2xl text-white">
-                    <h1 class="font-bold pl-1">Dashboard</h1>
-                </div>
+    <!-- Notification Area -->
+    <div id="notification-area"></div>
+
+    <!-- Date Filter -->
+    <div class="filter-bar">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <i class="fas fa-calendar-alt" style="color:var(--sky);font-size:18px;"></i>
+            <span style="font-weight:700;font-size:14px;">Filter Tanggal</span>
+            <span style="font-size:12px;color:var(--muted);">— Tampilkan data sesuai rentang yang dipilih</span>
+        </div>
+        <div class="filter-group" style="width:100%;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+            <div class="filter-field">
+                <label>Dari Tanggal</label>
+                <input type="date" id="filter-start">
             </div>
+            <div class="filter-field">
+                <label>Sampai Tanggal</label>
+                <input type="date" id="filter-end">
+            </div>
+            <button class="btn btn-sky" onclick="applyDateFilter()">
+                <i class="fas fa-search"></i> Tampilkan
+            </button>
+        </div>
+    </div>
 
-            <div class="flex flex-wrap" id="dashboard-content">
-                <!-- Dashboard Controls (Filter, Export, Reset) -->
-                <div class="w-full px-6 pt-6 flex flex-col md:flex-row gap-4 items-end justify-between">
-                    <div class="flex flex-wrap gap-4 items-end">
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Dari Tanggal</label>
-                            <input type="date" id="filter-start" class="shadow border border-slate-200 rounded-lg py-2 px-3 text-slate-700 focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Sampai Tanggal</label>
-                            <input type="date" id="filter-end" class="shadow border border-slate-200 rounded-lg py-2 px-3 text-slate-700 focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div>
-                            <button onclick="applyDateFilter()" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">Tampilkan</button>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"><i class="fas fa-file-excel mr-2"></i>Export Excel</button>
-                        <button onclick="resetTransactions()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"><i class="fas fa-trash-alt mr-2"></i>Reset Riwayat</button>
-                    </div>
-                </div>
-
-                <!-- Notifications Alert Area -->
-                <div class="w-full px-6 pt-4" id="notification-area"></div>
-
-                <!-- Metrics -->
-                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
-                    <div class="card-panel rounded-2xl p-4 md:p-5">
-                        <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-3 md:pr-4">
-                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-emerald-500"><i class="fas fa-wallet text-xl md:text-3xl text-white"></i></div>
-                            </div>
-                            <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Keuntungan Hari Ini</h2>
-                                <p class="font-bold text-xl md:text-2xl mt-1" id="daily-profit">Rp 0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gaji Tukang Bengkel -->
-                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
-                    <div class="card-panel rounded-2xl p-4 md:p-5">
-                        <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-3 md:pr-4">
-                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-blue-600"><i class="fas fa-tools text-xl md:text-3xl text-white"></i></div>
-                            </div>
-                            <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Gaji (Bengkel)</h2>
-                                <p class="font-bold text-xl md:text-2xl mt-1" id="salary-mechanic">Rp 0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gaji Tukang Steam -->
-                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
-                    <div class="card-panel rounded-2xl p-4 md:p-5">
-                        <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-3 md:pr-4">
-                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-indigo-600"><i class="fas fa-tint text-xl md:text-3xl text-white"></i></div>
-                            </div>
-                            <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Gaji (Steam)</h2>
-                                <p class="font-bold text-xl md:text-2xl mt-1" id="salary-steam">Rp 0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total Pengeluaran -->
-                <div class="w-full md:w-1/2 xl:w-1/4 p-4 md:p-6">
-                    <div class="card-panel rounded-2xl p-4 md:p-5">
-                        <div class="flex flex-row items-center">
-                            <div class="flex-shrink pr-3 md:pr-4">
-                                <div class="rounded-xl md:rounded-2xl p-3 md:p-4 bg-rose-500"><i class="fas fa-shopping-cart text-xl md:text-3xl text-white"></i></div>
-                            </div>
-                            <div class="flex-1 text-right md:text-center">
-                                <h2 class="font-semibold uppercase text-slate-600 text-xs md:text-sm">Total Pengeluaran</h2>
-                                <p class="font-bold text-xl md:text-2xl mt-1" id="total-expense">Rp 0</p>
-                                <p class="text-xs text-gray-500 font-semibold" id="total-expense-items">0 Barang</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grafik Area -->
-                <div class="w-full p-4 md:p-6">
-                    <div class="card-panel rounded-2xl p-4 md:p-5">
-                        <h2 class="font-bold text-slate-800 mb-4 text-sm md:text-base">Grafik Keuntungan & Gaji Harian</h2>
-                        <div class="relative h-64 w-full">
-                            <canvas id="dashboardChart" class="w-full h-full"></canvas>
-                        </div>
-                    </div>
-                </div>
+    <!-- Metrics Grid -->
+    <div class="metrics-grid">
+        <!-- Keuntungan Bengkel -->
+        <div class="metric-card">
+            <div class="metric-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div>
+                <div class="metric-label">Untung Bengkel</div>
+                <div class="metric-value" id="daily-profit">Rp 0</div>
+                <div class="metric-sub">Dari penjualan sparepart</div>
+            </div>
+        </div>
+        <!-- Gaji Bengkel -->
+        <div class="metric-card">
+            <div class="metric-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div>
+                <div class="metric-label">Gaji Tukang Bengkel</div>
+                <div class="metric-value" id="salary-mechanic">Rp 0</div>
+                <div class="metric-sub">Total jasa bengkel</div>
+            </div>
+        </div>
+        <!-- Gaji Steam -->
+        <div class="metric-card">
+            <div class="metric-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+                <i class="fas fa-shower"></i>
+            </div>
+            <div>
+                <div class="metric-label">Gaji Tukang Steam</div>
+                <div class="metric-value" id="salary-steam">Rp 0</div>
+                <div class="metric-sub">Total jasa cuci steam</div>
+            </div>
+        </div>
+        <!-- Pengeluaran -->
+        <div class="metric-card">
+            <div class="metric-icon" style="background:linear-gradient(135deg,#f43f5e,#e11d48);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div>
+                <div class="metric-label">Total Pengeluaran</div>
+                <div class="metric-value" id="total-expense">Rp 0</div>
+                <div class="metric-sub" id="total-expense-items">0 Barang direstock</div>
+            </div>
+        </div>
+        <!-- Keuntungan Fotocopy -->
+        <div class="metric-card">
+            <div class="metric-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
+                <i class="fas fa-print"></i>
+            </div>
+            <div>
+                <div class="metric-label">Untung Fotocopy</div>
+                <div class="metric-value" id="fc-profit">Rp 0</div>
+                <div class="metric-sub" id="fc-tx-count">0 Transaksi</div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK (TBD for real deployment) & Logic -->
-    <script type="module" src="js/app.js"></script>
+    <!-- Chart -->
+    <div class="chart-card">
+        <h2><i class="fas fa-chart-bar" style="color:var(--sky);margin-right:8px;"></i>Grafik Pendapatan Harian</h2>
+        <p class="chart-sub">Perbandingan keuntungan dan gaji per hari sesuai filter tanggal</p>
+        <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#10b981;"></div>Untung Sparepart</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#3b82f6;"></div>Gaji Bengkel</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#6366f1;"></div>Gaji Steam</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:#8b5cf6;"></div>Untung Fotocopy</div>
+        </div>
+        <div style="position:relative;height:280px;">
+            <canvas id="dashboardChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+        <a href="pos.html" style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;padding:18px;color:white;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;transition:transform 0.18s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <i class="fas fa-cash-register" style="font-size:24px;opacity:0.9;"></i>
+            <span>Kasir<br><span style="font-weight:500;font-size:12px;opacity:0.85;">Catat transaksi</span></span>
+        </a>
+        <a href="inventory.html" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:16px;padding:18px;color:white;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;transition:transform 0.18s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <i class="fas fa-boxes" style="font-size:24px;opacity:0.9;"></i>
+            <span>Inventori<br><span style="font-weight:500;font-size:12px;opacity:0.85;">Kelola stok barang</span></span>
+        </a>
+        <a href="fotocopy.html" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);border-radius:16px;padding:18px;color:white;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;transition:transform 0.18s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            <i class="fas fa-print" style="font-size:24px;opacity:0.9;"></i>
+            <span>Fotocopy<br><span style="font-weight:500;font-size:12px;opacity:0.85;">Kasir & stok fotocopy</span></span>
+        </a>
+    </div>
+
+</div><!-- end page-content -->
+</main>
+
+<!-- ══ Bottom Nav (Mobile) ════════════════════════════ -->
+<nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="bnav-item active bnav-sky">
+            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+        </a>
+        <a href="pos.html" class="bnav-item bnav-amber">
+            <i class="fas fa-wrench"></i><span>Kasir</span>
+        </a>
+        <a href="inventory.html" class="bnav-item bnav-emerald">
+            <i class="fas fa-boxes"></i><span>Inventori</span>
+        </a>
+        <a href="fotocopy.html" class="bnav-item bnav-violet">
+            <i class="fas fa-print"></i><span>Fotocopy</span>
+        </a>
+    </div>
+</nav>
+
+<script type="module" src="js/app.js"></script>
 </body>
 </html>

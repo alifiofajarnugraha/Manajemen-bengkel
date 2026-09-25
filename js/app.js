@@ -41,9 +41,10 @@ function formatRupiah(number) {
 // ── State ────────────────────────────────────────────────────────────────────
 
 let state = {
-    inventory:    [],
-    transactions: [],
-    expenses:     [],
+    inventory:            [],
+    transactions:         [],
+    expenses:             [],
+    fotocopyTransactions: [],
     workers: [
         { id: 'mechanic', name: 'Bapak A (Bengkel)', salaryToday: 0 },
         { id: 'steam',    name: 'Bapak B (Steam)',   salaryToday: 0 }
@@ -88,6 +89,12 @@ function loadStateFirebase() {
         state.expenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderDashboard();
         if (typeof renderExpenses === 'function') renderExpenses();
+    });
+
+    // Fotocopy transactions (for dashboard profit card)
+    onSnapshot(collection(db, "fotocopy_transactions"), snapshot => {
+        state.fotocopyTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderDashboard();
     });
 }
 
@@ -173,6 +180,17 @@ function renderDashboard() {
         }
     });
 
+    // ── Aggregate fotocopy transactions ─────────────────────────────────
+    let totalFcProfit = 0;
+    let fcTxCount     = 0;
+    state.fotocopyTransactions.forEach(t => {
+        if (t.date < filterStart || t.date > filterEnd) return;
+        totalFcProfit += parseFloat(t.netProfit) || 0;
+        fcTxCount++;
+        if (!chartMap[t.date]) chartMap[t.date] = { profit: 0, mechanic: 0, steam: 0, fotocopy: 0 };
+        chartMap[t.date].fotocopy = (chartMap[t.date].fotocopy || 0) + (parseFloat(t.netProfit) || 0);
+    });
+
     // ── Aggregate expenses ────────────────────────────────────────────────
     state.expenses.forEach(e => {
         if (e.date < filterStart || e.date > filterEnd) return;
@@ -186,6 +204,12 @@ function renderDashboard() {
     elSteam.textContent    = formatRupiah(totalSteam);
     if (elTotalExpense) elTotalExpense.textContent = formatRupiah(totalExpenseAmount);
     if (elExpenseItems) elExpenseItems.textContent = `${totalExpenseQty} Barang`;
+
+    // Fotocopy profit card
+    const elFcProfit   = document.getElementById('fc-profit');
+    const elFcTxCount  = document.getElementById('fc-tx-count');
+    if (elFcProfit)  elFcProfit.textContent  = formatRupiah(totalFcProfit);
+    if (elFcTxCount) elFcTxCount.textContent = `${fcTxCount} Transaksi`;
 
     // ── Chart ─────────────────────────────────────────────────────────────
     const sortedDates = Object.keys(chartMap).sort();
@@ -221,6 +245,13 @@ function renderDashboard() {
                         label: 'Gaji Steam',
                         data: steamData,
                         backgroundColor: 'rgba(99,102,241,0.8)',
+                        borderRadius: 5,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Untung Fotocopy',
+                        data: sortedDates.map(d => (chartMap[d] && chartMap[d].fotocopy) || 0),
+                        backgroundColor: 'rgba(124,58,237,0.8)',
                         borderRadius: 5,
                         borderSkipped: false
                     }

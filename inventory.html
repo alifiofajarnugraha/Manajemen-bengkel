@@ -3,182 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventori - Manajemen Bengkel & Steam</title>
+    <title>Inventori Bengkel – TriUsaha</title>
+    <meta name="description" content="Kelola stok spare part, oli, dan barang bengkel. Tambah, edit, dan lihat daftar barang.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --app-bg: #eef2f7;
-            --panel-bg: #ffffff;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --brand: #0ea5e9;
-            --brand-2: #2563eb;
-        }
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --bg: #ecfdf5;
+    --card: #ffffff;
+    --sidebar: #0f172a;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --emerald: #10b981; --emerald-d: #059669; --emerald-light: #d1fae5;
+    --sky: #0ea5e9; --amber: #f59e0b; --violet: #8b5cf6;
+    --rose: #f43f5e; --sidebar-w: 256px;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #ecfdf5 0%, #f0f4f8 100%); color: var(--text); line-height: 1.5; }
+a { text-decoration: none; }
 
-        body {
-            font-family: "Plus Jakarta Sans", sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, #e0f2fe 0%, transparent 60%),
-                        radial-gradient(900px 500px at 90% 10%, #dbeafe 0%, transparent 55%),
-                        var(--app-bg);
-            color: var(--ink);
-        }
+/* Sidebar */
+.sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; z-index: 200; overflow-y: auto; }
+.sidebar-logo { padding: 28px 20px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.sidebar-logo .app-name { font-size: 21px; font-weight: 900; color: #fff; }
+.sidebar-logo .app-name span { color: #38bdf8; }
+.sidebar-logo .app-sub { font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500; }
+.sidebar-section-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; padding: 16px 20px 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 2px 10px; border-radius: 12px; color: #94a3b8; font-weight: 600; font-size: 14px; transition: all 0.18s; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.10); color: #fff; }
+.nav-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; color: white; }
+.ni-sky { background: var(--sky); } .ni-amber { background: var(--amber); } .ni-emerald { background: var(--emerald); } .ni-violet { background: var(--violet); }
 
-        .card-panel {
-            background: var(--panel-bg);
-            border: 1px solid rgba(15, 23, 42, 0.06);
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        }
+/* Main */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.page-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-        .soft-shadow {
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-        }
+/* Header */
+.page-header { background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 20px; padding: 22px 24px; color: white; }
+.page-header h1 { font-size: 22px; font-weight: 800; }
+.page-header p { font-size: 13px; color: #94a3b8; margin-top: 3px; }
 
-        .nav-link {
-            color: #94a3b8;
-            transition: all 0.2s ease;
-        }
+/* Form Card */
+.card { background: white; border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
+.card-header { padding: 18px 22px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-header-left { display: flex; align-items: center; gap: 10px; }
+.card-header h2 { font-size: 16px; font-weight: 800; }
+.card-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.card-body { padding: 22px; }
 
-        .nav-link:hover {
-            color: #7dd3fc;
-            background: rgba(148, 163, 184, 0.08);
-        }
+/* Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-label { font-size: 13px; font-weight: 700; color: #374151; display: flex; align-items: center; gap: 6px; }
+.form-label .required { color: var(--rose); font-size: 15px; }
+.form-label .hint { font-weight: 500; color: #94a3b8; font-size: 11px; }
+.form-input { width: 100%; padding: 13px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #f8fafc; outline: none; transition: border-color 0.18s, background 0.18s; }
+.form-input:focus { border-color: var(--emerald); background: white; }
+.form-input::placeholder { color: #cbd5e1; }
 
-        .nav-active {
-            color: #ffffff;
-            background: rgba(148, 163, 184, 0.14);
-            border-left: 3px solid #38bdf8;
-        }
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.18s; border: none; font-family: inherit; line-height: 1; white-space: nowrap; }
+.btn-emerald { background: var(--emerald); color: white; } .btn-emerald:hover { background: var(--emerald-d); transform: translateY(-1px); }
+.btn-amber { background: var(--amber); color: white; } .btn-amber:hover { background: #d97706; transform: translateY(-1px); }
+.btn-rose { background: var(--rose); color: white; } .btn-rose:hover { background: #e11d48; transform: translateY(-1px); }
+.btn-slate { background: #64748b; color: white; } .btn-slate:hover { background: #475569; }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--muted); } .btn-outline:hover { background: #f8fafc; }
 
-        .table-head {
-            background: #0f172a;
-            color: #ffffff;
-        }
-    </style>
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { background: #0f172a; }
+.data-table thead th { padding: 12px 16px; color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; white-space: nowrap; }
+.data-table thead th.right { text-align: right; }
+.data-table thead th.center { text-align: center; }
+.data-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+.data-table tbody tr:hover { background: #f0fdf4; }
+.data-table tbody td { padding: 13px 16px; font-size: 14px; }
+.data-table tbody td.right { text-align: right; }
+.data-table tbody td.center { text-align: center; }
+
+/* Stock badge */
+.stock-ok  { color: #059669; font-weight: 800; }
+.stock-low { color: #e11d48; font-weight: 800; }
+.stock-low::after { content: ' ⚠'; font-size: 12px; }
+
+/* Category badge */
+.cat-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; background: #f0fdf4; color: #059669; border: 1px solid #6ee7b7; }
+
+/* Profit badge */
+.profit-badge { color: #059669; font-weight: 700; }
+
+/* Bottom Nav */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--sidebar); border-top: 1px solid rgba(255,255,255,0.07); z-index: 200; overflow-x: auto; }
+.bottom-nav-inner { display: flex; height: 100%; min-width: max-content; width: 100%; }
+.bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; font-size: 10px; font-weight: 700; gap: 4px; padding: 8px 4px; min-width: 70px; transition: color 0.18s; }
+.bnav-item i { font-size: 19px; }
+.bnav-item.active { color: #fff; }
+.bnav-item.active.bnav-emerald i { color: #34d399; }
+
+/* Responsive */
+@media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding-bottom: 80px; } .bottom-nav { display: block; } .page-content { padding: 14px; gap: 14px; } .form-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .table-scroll { overflow-x: auto; } }
+</style>
 </head>
-<body class="leading-normal tracking-normal">
+<body>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="bg-slate-900 shadow-xl h-16 fixed bottom-0 md:relative md:h-screen z-10 w-full md:w-64 flex md:flex-col justify-between md:justify-start">
-            <div class="md:mt-12 md:w-48 md:mx-auto px-4 md:px-0 text-center md:text-left">
-                <h1 class="text-white text-xl md:text-2xl font-extrabold hidden md:block">Bengkel<span class="text-sky-400">App</span></h1>
-            </div>
-            <ul class="flex md:flex-col text-white w-full md:mt-8">
-                <li class="flex-1 md:w-full">
-                    <a href="index.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-tachometer-alt pr-0 md:pr-3"></i><span class="hidden md:inline">Dashboard</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="pos.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-cash-register pr-0 md:pr-3"></i><span class="hidden md:inline">Kasir & Transaksi</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="inventory.html" class="nav-link nav-active block py-3 md:py-4 px-4"><i class="fas fa-boxes pr-0 md:pr-3"></i><span class="hidden md:inline">Inventori</span></a>
-                </li>
-            </ul>
-        </div>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="app-name">Tri<span>Usaha</span></div>
+        <div class="app-sub">Bengkel &bull; Steam &bull; Fotocopy</div>
+    </div>
+    <div class="sidebar-section-label">Menu Utama</div>
+    <nav>
+        <a href="index.html" class="nav-item"><span class="nav-icon ni-sky"><i class="fas fa-tachometer-alt"></i></span>Dashboard</a>
+        <a href="pos.html" class="nav-item"><span class="nav-icon ni-amber"><i class="fas fa-wrench"></i></span>Kasir Bengkel & Steam</a>
+        <a href="inventory.html" class="nav-item active"><span class="nav-icon ni-emerald"><i class="fas fa-boxes"></i></span>Inventori Bengkel</a>
+        <a href="fotocopy.html" class="nav-item"><span class="nav-icon ni-violet"><i class="fas fa-print"></i></span>Fotocopy & ATK</a>
+    </nav>
+    <div style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: auto;">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700;">TriUsaha v2.0</div>
+        <div style="font-size: 11px; color: #475569; margin-top: 3px;">Powered by Firebase</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 800; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; letter-spacing: 1px;">&copy; <span style="color:#38bdf8;">AFN</span></div>
+    </div>
+</aside>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 mt-12 md:mt-2 pb-24 md:pb-5">
-            <div class="pt-6 px-6">
-                <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 soft-shadow text-2xl text-white">
-                    <h1 class="font-bold pl-1">Inventori & Stok Barang</h1>
+<!-- Main -->
+<main class="main">
+<div class="page-content">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-boxes" style="color:#34d399;margin-right:10px;"></i>Inventori Bengkel</h1>
+        <p>Kelola stok spare part, oli, dan semua barang bengkel — tambah, edit, atau hapus barang di sini</p>
+    </div>
+
+    <!-- Form Tambah/Edit Barang -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div style="width:36px;height:36px;border-radius:10px;background:var(--emerald);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <h2 id="form-title">Tambah Barang Baru ke Stok</h2>
+                    <p>Isi semua kolom di bawah lalu klik Simpan Barang</p>
                 </div>
             </div>
-
-            <div class="p-4 md:p-6">
-                <!-- Add Item Form -->
-                <div class="card-panel rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
-                    <h2 class="text-lg md:text-xl font-bold mb-4" id="form-title">Tambah Stok Barang Baru</h2>
-                    <form id="form-inventory" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="hidden" id="inv-id">
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Nama Barang (Oli/Sparepart/Sabun)</label>
-                            <input type="text" id="inv-name" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Kategori</label>
-                            <select id="inv-category" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                                <option value="oli">Oli & Pelumas</option>
-                                <option value="ban">Ban & Velg</option>
-                                <option value="rem">Pengereman</option>
-                                <option value="listrik">Kelistrikan (Busi, Aki, dll)</option>
-                                <option value="mesin">Mesin & Transmisi (CVT, Rantai)</option>
-                                <option value="aksesoris">Aksesoris Bengkel</option>
-                                <option value="steam">Perlengkapan Steam</option>
-                                <option value="lainnya">Lain-lain</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Harga Beli (Modal)</label>
-                            <input type="number" id="inv-buy-price" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Harga Jual</label>
-                            <input type="number" id="inv-sell-price" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 text-sm font-semibold mb-2">Stok Tersedia</label>
-                            <input type="number" id="inv-stock" required class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                        </div>
-                        <div class="md:col-span-2 text-right mt-4">
-                            <button type="button" id="btn-cancel-edit" class="hidden bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline mr-2">Batal</button>
-                            <button type="submit" id="btn-save-item" class="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
-                                Simpan Barang
+        </div>
+        <div class="card-body">
+            <form id="form-inventory">
+                <input type="hidden" id="inv-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="inv-name">
+                            <i class="fas fa-tag" style="color:var(--emerald);"></i>
+                            Nama Barang <span class="required">*</span>
+                        </label>
+                        <input type="text" id="inv-name" required class="form-input" placeholder="Contoh: Oli Mesin 1 Liter, Kampas Rem Depan">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="inv-category">
+                            <i class="fas fa-list" style="color:var(--emerald);"></i>
+                            Kategori Barang
+                        </label>
+                        <select id="inv-category" class="form-input">
+                            <option value="oli">🛢️ Oli & Pelumas</option>
+                            <option value="ban">🔘 Ban & Velg</option>
+                            <option value="rem">🔴 Pengereman (Kampas, Cakram)</option>
+                            <option value="listrik">⚡ Kelistrikan (Busi, Aki)</option>
+                            <option value="mesin">⚙️ Mesin & Transmisi (CVT, Rantai)</option>
+                            <option value="aksesoris">🔧 Aksesoris Bengkel</option>
+                            <option value="steam">💧 Perlengkapan Steam</option>
+                            <option value="lainnya">📦 Lain-lain</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="inv-buy-price">
+                            <i class="fas fa-arrow-down" style="color:var(--rose);"></i>
+                            Harga Beli / Modal (Rp) <span class="required">*</span>
+                        </label>
+                        <input type="number" id="inv-buy-price" required class="form-input" placeholder="Contoh: 30000">
+                        <span style="font-size:11px;color:#94a3b8;">Harga saat Anda membeli barang ini</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="inv-sell-price">
+                            <i class="fas fa-arrow-up" style="color:var(--emerald);"></i>
+                            Harga Jual ke Pelanggan (Rp) <span class="required">*</span>
+                        </label>
+                        <input type="number" id="inv-sell-price" required class="form-input" placeholder="Contoh: 45000">
+                        <span style="font-size:11px;color:#94a3b8;">Harga yang Anda kenakan ke pelanggan</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="inv-stock">
+                            <i class="fas fa-cubes" style="color:var(--amber);"></i>
+                            Jumlah Stok <span class="required">*</span>
+                        </label>
+                        <input type="number" id="inv-stock" required class="form-input" placeholder="Contoh: 10">
+                        <span style="font-size:11px;color:#94a3b8;">Berapa banyak barang yang tersedia sekarang</span>
+                    </div>
+                    <div class="form-group" style="justify-content:flex-end;padding-top:24px;">
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button type="button" id="btn-cancel-edit" class="btn btn-slate" style="display:none;" onclick="/* handled by app.js */">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" id="btn-save-item" class="btn btn-emerald" style="flex:1;justify-content:center;padding:14px;">
+                                <i class="fas fa-save"></i> Simpan Barang
                             </button>
                         </div>
-                    </form>
-                </div>
-
-                <!-- Inventory List -->
-                <div class="card-panel rounded-2xl p-4 md:p-6 mb-6">
-                    <h2 class="text-lg md:text-xl font-bold mb-4">Daftar Barang</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white whitespace-nowrap">
-                            <thead class="table-head">
-                                <tr>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Nama Barang</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Kategori</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Stok</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Modal</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Harga Jual</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Keuntungan (Estimasi)</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-list" class="text-gray-700">
-                                <!-- Data will be loaded via JS -->
-                            </tbody>
-                        </table>
                     </div>
                 </div>
+            </form>
+        </div>
+    </div>
 
-                <!-- Expenses List -->
-                <div class="card-panel rounded-2xl p-4 md:p-6">
-                    <h2 class="text-lg md:text-xl font-bold mb-4">Riwayat Pengeluaran (Restock)</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white whitespace-nowrap">
-                            <thead class="table-head">
-                                <tr>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Tanggal</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-left">Nama Barang</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-center">Jumlah</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Harga Satuan</th>
-                                    <th class="py-3 px-4 uppercase font-semibold text-sm text-right">Total Pengeluaran</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expenses-list" class="text-gray-700">
-                                <!-- Data will be loaded via JS -->
-                            </tbody>
-                        </table>
-                    </div>
+    <!-- Daftar Barang -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div style="width:36px;height:36px;border-radius:10px;background:#0f172a;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;">
+                    <i class="fas fa-list"></i>
                 </div>
+                <div>
+                    <h2>Daftar Stok Barang</h2>
+                    <p>Semua barang yang tersedia di bengkel — stok <span style="color:var(--rose);font-weight:700;">merah</span> berarti hampir habis!</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-scroll" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Barang</th>
+                            <th class="center">Kategori</th>
+                            <th class="center">Stok</th>
+                            <th class="right">Modal Beli</th>
+                            <th class="right">Harga Jual</th>
+                            <th class="right">Untung/item</th>
+                            <th class="center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-list">
+                        <tr>
+                            <td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;">
+                                <i class="fas fa-boxes" style="font-size:28px;display:block;margin-bottom:10px;"></i>
+                                Belum ada barang. Tambahkan barang di atas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <script type="module" src="js/app.js"></script>
+    <!-- Riwayat Pengeluaran -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <div style="width:36px;height:36px;border-radius:10px;background:var(--rose);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <div>
+                    <h2>Riwayat Pengeluaran & Restock</h2>
+                    <p>Catatan modal yang dikeluarkan setiap kali stok ditambahkan</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-scroll" style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Nama Barang</th>
+                            <th class="center">Jml Ditambah</th>
+                            <th class="right">Harga Beli</th>
+                            <th class="right">Total Modal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-list">
+                        <tr>
+                            <td colspan="5" style="text-align:center;padding:40px;color:#94a3b8;">
+                                <i class="fas fa-receipt" style="font-size:28px;display:block;margin-bottom:10px;"></i>
+                                Belum ada riwayat pengeluaran.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="bnav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+        <a href="pos.html" class="bnav-item"><i class="fas fa-wrench"></i><span>Kasir</span></a>
+        <a href="inventory.html" class="bnav-item active bnav-emerald"><i class="fas fa-boxes"></i><span>Inventori</span></a>
+        <a href="fotocopy.html" class="bnav-item"><i class="fas fa-print"></i><span>Fotocopy</span></a>
+    </div>
+</nav>
+
+<script type="module" src="js/app.js"></script>
 </body>
 </html>

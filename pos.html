@@ -3,177 +3,377 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir - Manajemen Bengkel & Steam</title>
+    <title>Kasir Bengkel – TriUsaha</title>
+    <meta name="description" content="Halaman kasir untuk mencatat transaksi bengkel dan cuci steam kendaraan.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --app-bg: #eef2f7;
-            --panel-bg: #ffffff;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --brand: #0ea5e9;
-            --brand-2: #2563eb;
-        }
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --bg: #fffbeb;
+    --card: #ffffff;
+    --sidebar: #0f172a;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --amber: #f59e0b; --amber-d: #d97706; --amber-light: #fef3c7;
+    --sky: #0ea5e9;
+    --emerald: #10b981;
+    --violet: #8b5cf6;
+    --rose: #f43f5e;
+    --sidebar-w: 256px;
+}
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: linear-gradient(135deg, #fffbeb 0%, #f0f9ff 100%);
+    color: var(--text); line-height: 1.5;
+}
+a { text-decoration: none; }
 
-        body {
-            font-family: "Plus Jakarta Sans", sans-serif;
-            background: radial-gradient(1200px 600px at 10% -10%, #e0f2fe 0%, transparent 60%),
-                        radial-gradient(900px 500px at 90% 10%, #dbeafe 0%, transparent 55%),
-                        var(--app-bg);
-            color: var(--ink);
-        }
+/* Sidebar */
+.sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; z-index: 200; overflow-y: auto; }
+.sidebar-logo { padding: 28px 20px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.sidebar-logo .app-name { font-size: 21px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.sidebar-logo .app-name span { color: #38bdf8; }
+.sidebar-logo .app-sub { font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500; }
+.sidebar-section-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; padding: 16px 20px 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 2px 10px; border-radius: 12px; color: #94a3b8; font-weight: 600; font-size: 14px; transition: all 0.18s; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.10); color: #fff; }
+.nav-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; color: white; }
+.ni-sky { background: var(--sky); } .ni-amber { background: var(--amber); } .ni-emerald { background: var(--emerald); } .ni-violet { background: var(--violet); }
 
-        .card-panel {
-            background: var(--panel-bg);
-            border: 1px solid rgba(15, 23, 42, 0.06);
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        }
+/* Main */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.page-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-        .soft-shadow {
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-        }
+/* Page Header */
+.page-header { background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 20px; padding: 22px 24px; color: white; }
+.page-header h1 { font-size: 22px; font-weight: 800; }
+.page-header p { font-size: 13px; color: #94a3b8; margin-top: 3px; }
 
-        .nav-link {
-            color: #94a3b8;
-            transition: all 0.2s ease;
-        }
+/* Cards */
+.card { background: white; border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.card-header { padding: 18px 22px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; }
+.card-header h2 { font-size: 16px; font-weight: 800; }
+.card-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.card-body { padding: 20px 22px; }
 
-        .nav-link:hover {
-            color: #7dd3fc;
-            background: rgba(148, 163, 184, 0.08);
-        }
+/* Step badge */
+.step-badge {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--amber); color: white;
+    font-size: 13px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
 
-        .nav-active {
-            color: #ffffff;
-            background: rgba(148, 163, 184, 0.14);
-            border-left: 3px solid #38bdf8;
-        }
+/* Form */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 13px; font-weight: 700; color: #374151; }
+.form-label .hint { font-weight: 500; color: #94a3b8; font-size: 12px; margin-left: 6px; }
+.form-input {
+    width: 100%; padding: 14px 16px;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-size: 15px; font-family: inherit; color: var(--text);
+    background: #f8fafc; outline: none; transition: border-color 0.18s, background 0.18s;
+    appearance: none; -webkit-appearance: none;
+}
+.form-input:focus { border-color: var(--amber); background: white; }
+.form-select-wrapper { position: relative; }
+.form-select-wrapper::after { content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 
-        .table-head {
-            background: #0f172a;
-            color: #ffffff;
-        }
-    </style>
+/* Worker cards */
+.worker-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.worker-card {
+    border: 2px solid var(--border); border-radius: 14px;
+    padding: 14px 16px; cursor: pointer;
+    transition: all 0.18s; display: flex; align-items: center; gap: 12px;
+    background: #f8fafc;
+}
+.worker-card:hover { border-color: var(--amber); background: var(--amber-light); }
+.worker-card.selected { border-color: var(--amber); background: var(--amber-light); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+.worker-card-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--amber); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+.worker-card-name { font-weight: 700; font-size: 14px; }
+.worker-card-role { font-size: 11px; color: var(--muted); }
+
+/* Cart table */
+.cart-table { width: 100%; border-collapse: collapse; }
+.cart-table thead tr { background: #0f172a; }
+.cart-table thead th { padding: 12px 14px; color: white; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; white-space: nowrap; }
+.cart-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+.cart-table tbody tr:hover { background: #fffbeb; }
+.cart-table tbody td { padding: 13px 14px; font-size: 14px; }
+
+/* Total area */
+.total-area { background: #0f172a; border-radius: 16px; padding: 20px 22px; color: white; }
+.total-row { display: flex; justify-content: space-between; align-items: center; }
+.total-big { font-size: 26px; font-weight: 900; color: #fbbf24; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.18s; border: none; font-family: inherit; line-height: 1; white-space: nowrap; }
+.btn-amber { background: var(--amber); color: white; } .btn-amber:hover { background: var(--amber-d); transform: translateY(-1px); }
+.btn-emerald { background: var(--emerald); color: white; } .btn-emerald:hover { background: #059669; transform: translateY(-1px); }
+.btn-rose { background: var(--rose); color: white; } .btn-rose:hover { background: #e11d48; transform: translateY(-1px); }
+.btn-slate { background: #334155; color: white; } .btn-slate:hover { background: #1e293b; }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--muted); } .btn-outline:hover { background: #f8fafc; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-lg { padding: 16px 24px; font-size: 16px; border-radius: 14px; }
+
+/* History item */
+.history-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.history-item:last-child { border-bottom: none; }
+.history-item-title { font-weight: 700; font-size: 13px; }
+.history-item-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.history-item-amount { font-weight: 800; font-size: 14px; color: var(--amber); white-space: nowrap; }
+
+/* Bottom Nav */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--sidebar); border-top: 1px solid rgba(255,255,255,0.07); z-index: 200; overflow-x: auto; }
+.bottom-nav-inner { display: flex; height: 100%; min-width: max-content; width: 100%; }
+.bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; font-size: 10px; font-weight: 700; gap: 4px; padding: 8px 4px; min-width: 70px; transition: color 0.18s; }
+.bnav-item i { font-size: 19px; }
+.bnav-item.active { color: #fff; }
+.bnav-item.active.bnav-amber i { color: #fbbf24; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding-bottom: 80px; }
+    .bottom-nav { display: block; }
+    .page-content { padding: 14px; gap: 14px; }
+    .worker-cards { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+    .two-col { grid-template-columns: 1fr; }
+    .cart-table-wrapper { overflow-x: auto; }
+}
+</style>
 </head>
-<body class="leading-normal tracking-normal">
+<body>
 
-    <div class="flex flex-col md:flex-row">
-        <!-- Sidebar -->
-        <div class="bg-slate-900 shadow-xl h-16 fixed bottom-0 md:relative md:h-screen z-10 w-full md:w-64 flex md:flex-col justify-between md:justify-start">
-            <div class="md:mt-12 md:w-48 md:mx-auto px-4 md:px-0 text-center md:text-left">
-                <h1 class="text-white text-xl md:text-2xl font-extrabold hidden md:block">Bengkel<span class="text-sky-400">App</span></h1>
-            </div>
-            <ul class="flex md:flex-col text-white w-full md:mt-8">
-                <li class="flex-1 md:w-full">
-                    <a href="index.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-tachometer-alt pr-0 md:pr-3"></i><span class="hidden md:inline">Dashboard</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="pos.html" class="nav-link nav-active block py-3 md:py-4 px-4"><i class="fas fa-cash-register pr-0 md:pr-3"></i><span class="hidden md:inline">Kasir & Transaksi</span></a>
-                </li>
-                <li class="flex-1 md:w-full">
-                    <a href="inventory.html" class="nav-link block py-3 md:py-4 px-4"><i class="fas fa-boxes pr-0 md:pr-3"></i><span class="hidden md:inline">Inventori</span></a>
-                </li>
-            </ul>
-        </div>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="app-name">Tri<span>Usaha</span></div>
+        <div class="app-sub">Bengkel &bull; Steam &bull; Fotocopy</div>
+    </div>
+    <div class="sidebar-section-label">Menu Utama</div>
+    <nav>
+        <a href="index.html" class="nav-item"><span class="nav-icon ni-sky"><i class="fas fa-tachometer-alt"></i></span>Dashboard</a>
+        <a href="pos.html" class="nav-item active"><span class="nav-icon ni-amber"><i class="fas fa-wrench"></i></span>Kasir Bengkel & Steam</a>
+        <a href="inventory.html" class="nav-item"><span class="nav-icon ni-emerald"><i class="fas fa-boxes"></i></span>Inventori Bengkel</a>
+        <a href="fotocopy.html" class="nav-item"><span class="nav-icon ni-violet"><i class="fas fa-print"></i></span>Fotocopy & ATK</a>
+    </nav>
+    <div style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: auto;">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700;">TriUsaha v2.0</div>
+        <div style="font-size: 11px; color: #475569; margin-top: 3px;">Powered by Firebase</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 800; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; letter-spacing: 1px;">&copy; <span style="color:#38bdf8;">AFN</span></div>
+    </div>
+</aside>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 mt-12 md:mt-2 pb-24 md:pb-5">
-            <div class="pt-6 px-6">
-                <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-5 soft-shadow text-2xl text-white">
-                    <h1 class="font-bold pl-1">Kasir & Tambah Transaksi</h1>
-                </div>
-            </div>
+<!-- Main -->
+<main class="main">
+<div class="page-content">
 
-            <div class="flex flex-col xl:flex-row p-4 md:p-6 gap-4 md:gap-6">
-                <!-- Transaction Form Area -->
-                <div class="w-full xl:w-2/3">
-                    <div class="card-panel rounded-2xl p-4 md:p-6">
-                        <h2 class="text-lg md:text-xl font-bold mb-4">Input Layanan / Jasa</h2>
-                        <form id="form-transaction">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-slate-700 text-sm font-semibold mb-2">Pilih Pekerja (Tukang)</label>
-                                    <select id="pos-worker" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                                        <option value="mechanic">Bapak A (Tukang Bengkel)</option>
-                                        <option value="steam">Bapak B (Tukang Steam)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <hr class="mb-4">
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-end">
-                                <div>
-                                    <label class="block text-slate-700 text-sm font-semibold mb-2">Pilih Barang (Oli/Part)</label>
-                                    <select id="pos-item" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                                        <option value="">-- Tanpa Barang --</option>
-                                        <!-- Looped via JS -->
-                                    </select>
-                                </div>
-                                <div id="container-service-fee">
-                                    <label id="pos-service-fee-label" class="block text-slate-700 text-sm font-semibold mb-2">Biaya Jasa (Gaji Masuk Pekerja)</label>
-                                    <input type="number" id="pos-service-fee" placeholder="0" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                                </div>
-                                <div id="container-qty" style="display: none;">
-                                    <label class="block text-slate-700 text-sm font-semibold mb-2">Jumlah Cuci (Steam)</label>
-                                    <input type="number" id="pos-qty" placeholder="1" value="1" min="1" class="shadow border border-slate-200 rounded-lg w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:border-sky-500">
-                                </div>
-                                <div>
-                                    <button type="button" id="btn-add-item" class="bg-emerald-500 hover:bg-emerald-600 w-full text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline">
-                                        Tambahkan ke Keranjang
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="card-panel rounded-2xl p-4 md:p-6 mt-4 md:mt-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg md:text-xl font-bold">Keranjang & Ringkasan</h2>
-                        </div>
-                        <div class="overflow-x-auto mb-4">
-                            <table class="min-w-full bg-white whitespace-nowrap">
-                                <thead class="table-head">
-                                    <tr>
-                                        <th class="py-2 px-4 text-left text-sm">Deskripsi</th>
-                                        <th class="py-2 px-4 text-right text-sm">Barang/Part</th>
-                                        <th class="py-2 px-4 text-right text-sm">Biaya Jasa</th>
-                                        <th class="py-2 px-4 text-right text-sm">Subtotal</th>
-                                        <th class="py-2 px-4 text-center text-sm">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cart-list" class="text-gray-700 text-sm">
-                                    <!-- Cart Items via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="text-right border-t pt-4">
-                            <h2 class="text-2xl font-bold text-slate-800">Total: <span id="cart-total">Rp 0</span></h2>
-                            <button id="btn-checkout" class="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
-                                Proses Pembayaran Selesai
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- History Area -->
-                <div class="w-full xl:w-1/3">
-                    <div class="card-panel rounded-2xl p-4 md:p-6">
-                        <h2 class="text-lg md:text-xl font-bold mb-4">Riwayat Hari Ini</h2>
-                        <ul id="transaction-history" class="divide-y divide-slate-200">
-                            <!-- Transactions via JS -->
-                        </ul>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+    <!-- Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-cash-register" style="color:#fbbf24;margin-right:10px;"></i>Kasir Bengkel & Steam</h1>
+        <p>Catat transaksi servis kendaraan dan cuci steam — ikuti langkah 1, 2, 3 di bawah</p>
     </div>
 
-    <script type="module" src="js/app.js"></script>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;" class="main-grid">
+
+        <!-- ═══ LEFT SIDE ═══ -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Step 1: Pilih Pekerja -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="step-badge">1</div>
+                    <div>
+                        <h2>Pilih Tukang / Pekerja</h2>
+                        <p>Siapa yang mengerjakan servis ini?</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="worker-cards">
+                        <div class="worker-card selected" id="wcard-mechanic" onclick="selectWorker('mechanic')">
+                            <div class="worker-card-icon"><i class="fas fa-wrench"></i></div>
+                            <div>
+                                <div class="worker-card-name">Bengkel</div>
+                                <div class="worker-card-role">Tukang bengkel / servis</div>
+                            </div>
+                        </div>
+                        <div class="worker-card" id="wcard-steam" onclick="selectWorker('steam')">
+                            <div class="worker-card-icon" style="background:#6366f1;"><i class="fas fa-shower"></i></div>
+                            <div>
+                                <div class="worker-card-name">Steam / Cuci</div>
+                                <div class="worker-card-role">Tukang cuci kendaraan</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Hidden select for app.js compatibility -->
+                    <select id="pos-worker" style="display:none;">
+                        <option value="mechanic">Bapak A (Tukang Bengkel)</option>
+                        <option value="steam">Bapak B (Tukang Steam)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 2: Pilih Barang & Jasa -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="step-badge">2</div>
+                    <div>
+                        <h2>Tambah Barang / Jasa</h2>
+                        <p>Pilih spare part yang dipakai atau masukkan biaya jasa</p>
+                    </div>
+                </div>
+                <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+                    <div class="form-group">
+                        <label class="form-label">Spare Part / Barang <span class="hint">— Kosongkan jika hanya jasa</span></label>
+                        <div class="form-select-wrapper">
+                            <select id="pos-item" class="form-input">
+                                <option value="">— Tidak pakai barang (jasa saja) —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Biaya Jasa (Bengkel) -->
+                    <div id="container-service-fee" class="form-group">
+                        <label class="form-label" id="pos-service-fee-label">
+                            <i class="fas fa-hand-holding-usd" style="color:var(--amber);margin-right:4px;"></i>
+                            Biaya Jasa <span class="hint">— Upah untuk tukang</span>
+                        </label>
+                        <div style="position:relative;">
+                            <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted);font-size:14px;">Rp</span>
+                            <input type="number" id="pos-service-fee" placeholder="0" class="form-input" style="padding-left:42px;">
+                        </div>
+                        <div style="font-size:12px;color:#94a3b8;">Contoh: masukkan 50000 untuk biaya jasa Rp 50.000</div>
+                    </div>
+                    <!-- Qty (Steam) -->
+                    <div id="container-qty" style="display:none;" class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-car" style="color:#6366f1;margin-right:4px;"></i>
+                            Jumlah Kendaraan Dicuci
+                        </label>
+                        <input type="number" id="pos-qty" value="1" min="1" class="form-input">
+                        <div style="font-size:12px;color:#94a3b8;">Biaya steam: Rp 10.000/kendaraan | Gaji tukang: Rp 5.000/kendaraan</div>
+                    </div>
+                    <button type="button" id="btn-add-item" class="btn btn-amber btn-block" style="padding:14px;font-size:15px;">
+                        <i class="fas fa-plus-circle"></i> Tambah ke Daftar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Daftar & Bayar -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="step-badge">3</div>
+                    <div>
+                        <h2>Daftar Belanja & Pembayaran</h2>
+                        <p>Cek daftar item lalu proses pembayaran</p>
+                    </div>
+                </div>
+                <div class="card-body" style="display:flex;flex-direction:column;gap:16px;">
+                    <div class="cart-table-wrapper" style="overflow-x:auto;">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Deskripsi Layanan</th>
+                                    <th style="text-align:right;">Barang</th>
+                                    <th style="text-align:right;">Jasa</th>
+                                    <th style="text-align:right;">Subtotal</th>
+                                    <th style="text-align:center;">Hapus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-list">
+                                <tr id="cart-empty-row">
+                                    <td colspan="5" style="text-align:center;padding:28px;color:#94a3b8;">
+                                        <i class="fas fa-shopping-cart" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                                        Belum ada item. Tambahkan di langkah 2.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="total-area">
+                        <div class="total-row">
+                            <span style="font-size:14px;color:#94a3b8;font-weight:600;">TOTAL PEMBAYARAN</span>
+                            <span class="total-big" id="cart-total">Rp 0</span>
+                        </div>
+                    </div>
+                    <button id="btn-checkout" class="btn btn-emerald btn-block btn-lg">
+                        <i class="fas fa-check-circle"></i> Proses Pembayaran Selesai ✓
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══ RIGHT SIDE: Riwayat Hari Ini ═══ -->
+        <div>
+            <div class="card" style="position:sticky;top:24px;">
+                <div class="card-header">
+                    <i class="fas fa-history" style="color:var(--amber);font-size:18px;"></i>
+                    <div>
+                        <h2>Transaksi Hari Ini</h2>
+                        <p>Riwayat yang sudah diproses</p>
+                    </div>
+                </div>
+                <div class="card-body" style="max-height:500px;overflow-y:auto;">
+                    <ul id="transaction-history">
+                        <li style="padding:24px 0;text-align:center;color:#94a3b8;font-size:13px;">
+                            <i class="fas fa-receipt" style="display:block;font-size:28px;margin-bottom:8px;"></i>
+                            Belum ada transaksi hari ini
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end main-grid -->
+</div>
+</main>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="bnav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+        <a href="pos.html" class="bnav-item active bnav-amber"><i class="fas fa-wrench"></i><span>Kasir</span></a>
+        <a href="inventory.html" class="bnav-item"><i class="fas fa-boxes"></i><span>Inventori</span></a>
+        <a href="fotocopy.html" class="bnav-item"><i class="fas fa-print"></i><span>Fotocopy</span></a>
+    </div>
+</nav>
+
+<style>
+@media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr !important; }
+    .card { position: relative !important; top: unset !important; }
+}
+</style>
+
+<script>
+// Worker card visual selection (syncs with hidden select)
+function selectWorker(workerId) {
+    document.getElementById('pos-worker').value = workerId;
+    document.getElementById('wcard-mechanic').classList.toggle('selected', workerId === 'mechanic');
+    document.getElementById('wcard-steam').classList.toggle('selected', workerId === 'steam');
+    // Trigger the change event so app.js can react
+    document.getElementById('pos-worker').dispatchEvent(new Event('change'));
+}
+
+// Remove the empty row when items are added
+const origCartList = document.getElementById('cart-list');
+const emptyRow = document.getElementById('cart-empty-row');
+const observer = new MutationObserver(() => {
+    const rows = origCartList.querySelectorAll('tr:not(#cart-empty-row)');
+    if (emptyRow) emptyRow.style.display = rows.length > 0 ? 'none' : '';
+});
+if (origCartList) observer.observe(origCartList, { childList: true });
+</script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>

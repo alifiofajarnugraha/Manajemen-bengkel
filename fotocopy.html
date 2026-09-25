@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotocopy & ATK – TriUsaha</title>
+    <meta name="description" content="Kasir fotocopy, manajemen stok ATK dan kertas, serta fitur diskon untuk pelanggan.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --bg: #f5f3ff;
+    --card: #ffffff;
+    --sidebar: #0f172a;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --violet: #8b5cf6; --violet-d: #7c3aed; --violet-light: #ede9fe;
+    --sky: #0ea5e9; --amber: #f59e0b; --emerald: #10b981;
+    --rose: #f43f5e; --sidebar-w: 256px;
+}
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); color: var(--text); line-height: 1.5; }
+a { text-decoration: none; }
+
+/* Sidebar */
+.sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--sidebar); display: flex; flex-direction: column; z-index: 200; overflow-y: auto; }
+.sidebar-logo { padding: 28px 20px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.sidebar-logo .app-name { font-size: 21px; font-weight: 900; color: #fff; }
+.sidebar-logo .app-name span { color: #38bdf8; }
+.sidebar-logo .app-sub { font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500; }
+.sidebar-section-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; padding: 16px 20px 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin: 2px 10px; border-radius: 12px; color: #94a3b8; font-weight: 600; font-size: 14px; transition: all 0.18s; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.10); color: #fff; }
+.nav-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; color: white; }
+.ni-sky { background: var(--sky); } .ni-amber { background: var(--amber); } .ni-emerald { background: var(--emerald); } .ni-violet { background: var(--violet); }
+
+/* Main */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.page-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+/* Header */
+.page-header { background: linear-gradient(135deg, #4c1d95, #5b21b6); border-radius: 20px; padding: 22px 24px; color: white; }
+.page-header h1 { font-size: 22px; font-weight: 800; }
+.page-header p { font-size: 13px; color: #c4b5fd; margin-top: 3px; }
+
+/* Tabs */
+.tab-bar { display: flex; gap: 8px; background: white; padding: 8px; border-radius: 16px; border: 1px solid var(--border); width: fit-content; flex-wrap: wrap; }
+.tab-btn { padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.18s; display: flex; align-items: center; gap: 8px; }
+.tab-btn:hover { background: #f5f3ff; color: var(--violet); }
+.tab-btn.active { background: var(--violet); color: white; }
+.tab-panel { display: none; }
+.tab-panel.active { display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.2s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Card */
+.card { background: white; border-radius: 18px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
+.card-header { padding: 18px 22px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-header-left { display: flex; align-items: center; gap: 10px; }
+.card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+.card-header h2 { font-size: 16px; font-weight: 800; }
+.card-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.card-body { padding: 22px; }
+
+/* Form */
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-label { font-size: 13px; font-weight: 700; color: #374151; display: flex; align-items: center; gap: 6px; }
+.form-label .hint { font-weight: 500; color: #94a3b8; font-size: 11px; }
+.form-input { width: 100%; padding: 13px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #f8fafc; outline: none; transition: border-color 0.18s, background 0.18s; }
+.form-input:focus { border-color: var(--violet); background: white; }
+.form-input::placeholder { color: #cbd5e1; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.18s; border: none; font-family: inherit; line-height: 1; white-space: nowrap; }
+.btn-violet { background: var(--violet); color: white; } .btn-violet:hover { background: var(--violet-d); transform: translateY(-1px); }
+.btn-amber { background: var(--amber); color: white; } .btn-amber:hover { background: #d97706; transform: translateY(-1px); }
+.btn-emerald { background: var(--emerald); color: white; } .btn-emerald:hover { background: #059669; transform: translateY(-1px); }
+.btn-rose { background: var(--rose); color: white; } .btn-rose:hover { background: #e11d48; transform: translateY(-1px); }
+.btn-slate { background: #64748b; color: white; } .btn-slate:hover { background: #475569; }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--muted); } .btn-outline:hover { background: #f8fafc; }
+.btn-block { width: 100%; justify-content: center; }
+
+/* Discount type toggle */
+.disc-type-bar { display: flex; gap: 6px; background: #f5f3ff; padding: 6px; border-radius: 12px; border: 1px solid #ddd6fe; width: fit-content; }
+.disc-type-btn { padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; border: none; background: transparent; color: var(--violet); transition: all 0.18s; font-family: inherit; }
+.disc-type-btn.active { background: var(--violet); color: white; }
+
+/* Cart */
+.cart-table { width: 100%; border-collapse: collapse; }
+.cart-table thead tr { background: #0f172a; }
+.cart-table thead th { padding: 11px 14px; color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; text-align: left; white-space: nowrap; }
+.cart-table thead th.right { text-align: right; } .cart-table thead th.center { text-align: center; }
+.cart-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+.cart-table tbody tr:hover { background: #faf5ff; }
+.cart-table tbody td { padding: 12px 14px; font-size: 14px; }
+.cart-table tbody td.right { text-align: right; } .cart-table tbody td.center { text-align: center; }
+
+/* Total box */
+.total-box { background: #0f172a; border-radius: 16px; padding: 18px 22px; color: white; display: flex; flex-direction: column; gap: 10px; }
+.total-row { display: flex; justify-content: space-between; align-items: center; }
+.total-label { font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.total-val { font-size: 14px; color: white; font-weight: 600; }
+.total-disc { color: #fbbf24; }
+.total-final { font-size: 26px; font-weight: 900; color: #c4b5fd; }
+
+/* Discount preview */
+.disc-preview { background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #92400e; display: none; }
+
+/* History item */
+.history-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+.history-item:last-child { border-bottom: none; }
+.history-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.history-item-names { font-weight: 700; font-size: 13px; color: var(--text); }
+.history-item-total { font-weight: 800; font-size: 14px; color: var(--violet); white-space: nowrap; }
+.history-item-disc { font-size: 11px; color: var(--amber); margin-top: 2px; }
+.history-item-profit { font-size: 11px; color: var(--emerald); }
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead tr { background: #0f172a; }
+.data-table thead th { padding: 12px 16px; color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; white-space: nowrap; }
+.data-table thead th.right { text-align: right; } .data-table thead th.center { text-align: center; }
+.data-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+.data-table tbody tr:hover { background: #faf5ff; }
+.data-table tbody td { padding: 13px 16px; font-size: 14px; }
+.data-table tbody td.right { text-align: right; } .data-table tbody td.center { text-align: center; }
+
+/* Notification */
+#fc-notification-area { display: flex; flex-direction: column; gap: 8px; }
+
+/* Bottom Nav */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--sidebar); border-top: 1px solid rgba(255,255,255,0.07); z-index: 200; overflow-x: auto; }
+.bottom-nav-inner { display: flex; height: 100%; min-width: max-content; width: 100%; }
+.bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; font-size: 10px; font-weight: 700; gap: 4px; padding: 8px 4px; min-width: 70px; transition: color 0.18s; }
+.bnav-item i { font-size: 19px; }
+.bnav-item.active { color: #fff; }
+.bnav-item.active.bnav-violet i { color: #c4b5fd; }
+
+/* Responsive */
+@media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding-bottom: 80px; } .bottom-nav { display: block; } .page-content { padding: 14px; gap: 14px; } .form-grid-2 { grid-template-columns: 1fr; } .kasir-grid { grid-template-columns: 1fr !important; } }
+@media (max-width: 600px) { .table-scroll { overflow-x: auto; } .tab-bar { width: 100%; } .tab-btn { flex: 1; justify-content: center; padding: 10px 12px; font-size: 12px; } }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="app-name">Tri<span>Usaha</span></div>
+        <div class="app-sub">Bengkel &bull; Steam &bull; Fotocopy</div>
+    </div>
+    <div class="sidebar-section-label">Menu Utama</div>
+    <nav>
+        <a href="index.html" class="nav-item"><span class="nav-icon ni-sky"><i class="fas fa-tachometer-alt"></i></span>Dashboard</a>
+        <a href="pos.html" class="nav-item"><span class="nav-icon ni-amber"><i class="fas fa-wrench"></i></span>Kasir Bengkel & Steam</a>
+        <a href="inventory.html" class="nav-item"><span class="nav-icon ni-emerald"><i class="fas fa-boxes"></i></span>Inventori Bengkel</a>
+        <a href="fotocopy.html" class="nav-item active"><span class="nav-icon ni-violet"><i class="fas fa-print"></i></span>Fotocopy & ATK</a>
+    </nav>
+    <div style="padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); margin-top: auto;">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700;">TriUsaha v2.0</div>
+        <div style="font-size: 11px; color: #475569; margin-top: 3px;">Powered by Firebase</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 800; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; letter-spacing: 1px;">&copy; <span style="color:#38bdf8;">AFN</span></div>
+    </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+<div class="page-content">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-print" style="color:#c4b5fd;margin-right:10px;"></i>Fotocopy & ATK</h1>
+        <p>Kasir fotocopy, kelola stok kertas & ATK, dan lihat riwayat transaksi — semua di satu tempat</p>
+    </div>
+
+    <!-- Notification area -->
+    <div id="fc-notification-area"></div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+        <button class="tab-btn active" id="btn-tab-kasir" onclick="switchTab('tab-kasir', this)">
+            <i class="fas fa-cash-register"></i> Kasir / Transaksi
+        </button>
+        <button class="tab-btn" id="btn-tab-inventori" onclick="switchTab('tab-inventori', this)">
+            <i class="fas fa-boxes"></i> Stok Barang
+        </button>
+        <button class="tab-btn" id="btn-tab-riwayat" onclick="switchTab('tab-riwayat', this)">
+            <i class="fas fa-history"></i> Semua Riwayat
+        </button>
+    </div>
+
+    <!-- ══════════ TAB: KASIR ══════════ -->
+    <div id="tab-kasir" class="tab-panel active">
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;" class="kasir-grid">
+
+            <!-- Left: Form + Cart -->
+            <div style="display:flex;flex-direction:column;gap:14px;">
+
+                <!-- Pilih Barang -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="card-icon" style="background:var(--violet);"><i class="fas fa-shopping-bag"></i></div>
+                            <div>
+                                <h2>Pilih Barang / Layanan</h2>
+                                <p>Pilih barang dari stok atau masukkan jasa manual</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+                        <div class="form-group">
+                            <label class="form-label">Barang atau Layanan <span class="hint">— Wajib dipilih</span></label>
+                            <select id="fc-item" class="form-input" onchange="onFcItemChange()">
+                                <option value="">— Pilih barang dari stok... —</option>
+                                <option value="__jasa__">✏️ Layanan / Jasa Manual (Isi harga sendiri)</option>
+                            </select>
+                        </div>
+
+                        <!-- Jasa manual input (hidden by default) -->
+                        <div id="fc-jasa-manual-container" style="display:none;background:#f5f3ff;border-radius:14px;padding:16px;border:1.5px solid #ddd6fe;">
+                            <div style="font-size:13px;font-weight:700;color:var(--violet);margin-bottom:12px;"><i class="fas fa-pencil-alt mr-2"></i> Input Jasa Manual</div>
+                            <div style="display:flex;flex-direction:column;gap:10px;">
+                                <div class="form-group">
+                                    <label class="form-label">Nama Layanan</label>
+                                    <input type="text" id="fc-jasa-name" placeholder="Contoh: Print Berwarna A4" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Harga Jual (Rp)</label>
+                                    <input type="number" id="fc-jasa-price" placeholder="Contoh: 2500" class="form-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Jumlah (Qty)</label>
+                            <input type="number" id="fc-qty" value="1" min="1" class="form-input" style="width:140px;">
+                        </div>
+                        <button onclick="fcAddToCart()" class="btn btn-violet btn-block" style="padding:14px;font-size:15px;">
+                            <i class="fas fa-plus-circle"></i> Tambah ke Keranjang
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Diskon -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="card-icon" style="background:#f59e0b;"><i class="fas fa-tag"></i></div>
+                            <div>
+                                <h2>Diskon untuk Pelanggan</h2>
+                                <p>Opsional — kosongkan jika tidak ada diskon</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+                        <div>
+                            <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:8px;">Tipe Diskon:</div>
+                            <div class="disc-type-bar">
+                                <button class="disc-type-btn active" id="disc-btn-persen" onclick="setDiscType('persen')">
+                                    <i class="fas fa-percent"></i> Persen (%)
+                                </button>
+                                <button class="disc-type-btn" id="disc-btn-nominal" onclick="setDiscType('nominal')">
+                                    Rp Nominal
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" id="disc-label">Besar Diskon (%)</label>
+                            <div style="position:relative;">
+                                <span id="disc-prefix" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted);font-size:14px;">%</span>
+                                <input type="number" id="fc-discount" min="0" value="0" class="form-input" style="padding-left:40px;" oninput="fcUpdateCart()">
+                            </div>
+                        </div>
+                        <div id="disc-preview" class="disc-preview"></div>
+                        <button onclick="clearDiscount()" class="btn btn-outline btn-block">
+                            <i class="fas fa-times"></i> Hapus Diskon
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Keranjang -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="card-icon" style="background:#0f172a;"><i class="fas fa-shopping-cart"></i></div>
+                            <div>
+                                <h2>Keranjang Belanja</h2>
+                                <p>Item yang akan dibayar pelanggan</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="display:flex;flex-direction:column;gap:14px;padding:0 0 22px;">
+                        <div class="table-scroll" style="overflow-x:auto;">
+                            <table class="cart-table">
+                                <thead>
+                                    <tr>
+                                        <th>Barang / Layanan</th>
+                                        <th class="center">Qty</th>
+                                        <th class="right">Harga</th>
+                                        <th class="right">Subtotal</th>
+                                        <th class="center">Hapus</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fc-cart-list">
+                                    <tr id="fc-cart-empty">
+                                        <td colspan="5" style="text-align:center;padding:28px;color:#94a3b8;">
+                                            <i class="fas fa-shopping-cart" style="font-size:22px;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                                            Keranjang masih kosong
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Total -->
+                        <div style="padding:0 22px;">
+                            <div class="total-box">
+                                <div class="total-row">
+                                    <span class="total-label">Subtotal</span>
+                                    <span class="total-val" id="fc-subtotal-display">Rp 0</span>
+                                </div>
+                                <div class="total-row" id="disc-line" style="display:none;">
+                                    <span class="total-label">Diskon <span id="disc-info-label" style="color:#fbbf24;"></span></span>
+                                    <span class="total-val total-disc" id="fc-discount-display">- Rp 0</span>
+                                </div>
+                                <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;" class="total-row">
+                                    <span class="total-label" style="font-size:14px;color:white;">TOTAL BAYAR</span>
+                                    <span class="total-final" id="fc-total-display">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding:0 22px;">
+                            <button id="btn-fc-checkout" onclick="fcCheckout()" class="btn btn-violet btn-block" style="padding:16px;font-size:16px;">
+                                <i class="fas fa-check-circle"></i> Proses Pembayaran ✓
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end left -->
+
+            <!-- Right: Riwayat Hari Ini -->
+            <div>
+                <div class="card" style="position:sticky;top:24px;">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <div class="card-icon" style="background:var(--violet);"><i class="fas fa-receipt"></i></div>
+                            <div>
+                                <h2>Riwayat Hari Ini</h2>
+                                <p>Transaksi fotocopy hari ini</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="max-height:560px;overflow-y:auto;padding:16px 20px;">
+                        <ul id="fc-history-today">
+                            <li style="padding:24px 0;text-align:center;color:#94a3b8;font-size:13px;">
+                                <i class="fas fa-receipt" style="display:block;font-size:28px;margin-bottom:8px;opacity:0.4;"></i>
+                                Belum ada transaksi hari ini
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end kasir-grid -->
+    </div><!-- end tab-kasir -->
+
+    <!-- ══════════ TAB: INVENTORI STOK ══════════ -->
+    <div id="tab-inventori" class="tab-panel">
+
+        <!-- Form Tambah/Edit -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon" style="background:var(--violet);"><i class="fas fa-plus"></i></div>
+                    <div>
+                        <h2 id="fc-form-title">Tambah Barang Fotocopy / ATK Baru</h2>
+                        <p>Isi kolom di bawah lalu klik Simpan</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="form-fc-inventory">
+                    <input type="hidden" id="fc-inv-id">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Nama Barang</label>
+                            <input type="text" id="fc-inv-name" required placeholder="Contoh: Kertas HVS A4 80gr" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kategori</label>
+                            <select id="fc-inv-category" class="form-input">
+                                <option value="kertas">📄 Kertas (HVS, Karton, F4)</option>
+                                <option value="atk">🖊️ ATK (Pulpen, Spidol, dll)</option>
+                                <option value="tinta">🖨️ Tinta & Toner Printer</option>
+                                <option value="jilid">📚 Jilid & Binding</option>
+                                <option value="map">📁 Map & Plastik</option>
+                                <option value="lainnya">📦 Lain-lain</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Harga Beli / Modal (Rp)</label>
+                            <input type="number" id="fc-inv-buy-price" required placeholder="0" class="form-input">
+                            <span style="font-size:11px;color:#94a3b8;">Harga Anda membeli barang ini</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Harga Jual ke Pelanggan (Rp)</label>
+                            <input type="number" id="fc-inv-sell-price" required placeholder="0" class="form-input">
+                            <span style="font-size:11px;color:#94a3b8;">Harga yang dikenakan ke pelanggan</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Jumlah Stok</label>
+                            <input type="number" id="fc-inv-stock" required placeholder="0" min="0" class="form-input">
+                            <span style="font-size:11px;color:#94a3b8;">Berapa banyak barang yang ada sekarang</span>
+                        </div>
+                        <div class="form-group" style="justify-content:flex-end;padding-top:20px;">
+                            <div style="display:flex;gap:10px;">
+                                <button type="button" id="fc-btn-cancel-edit" class="btn btn-slate" style="display:none;" onclick="fcResetInventoryForm()">
+                                    <i class="fas fa-times"></i> Batal
+                                </button>
+                                <button type="submit" id="fc-btn-save-item" class="btn btn-violet" style="flex:1;justify-content:center;padding:14px;">
+                                    <i class="fas fa-save"></i> Simpan Barang
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Daftar Barang Fotocopy -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon" style="background:#0f172a;"><i class="fas fa-list"></i></div>
+                    <div>
+                        <h2>Daftar Stok Barang Fotocopy</h2>
+                        <p>Stok <span style="color:var(--rose);font-weight:700;">merah</span> = hampir habis, segera restock!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-scroll" style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Barang</th>
+                                <th class="center">Kategori</th>
+                                <th class="center">Stok</th>
+                                <th class="right">Modal</th>
+                                <th class="right">Harga Jual</th>
+                                <th class="right">Untung/item</th>
+                                <th class="center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-inventory-list">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-boxes" style="font-size:28px;display:block;margin-bottom:10px;"></i>Belum ada barang.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Pengeluaran -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon" style="background:var(--rose);"><i class="fas fa-receipt"></i></div>
+                    <div>
+                        <h2>Riwayat Pengeluaran / Restock</h2>
+                        <p>Modal yang keluar setiap kali stok ditambahkan</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-scroll" style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Nama Barang</th>
+                                <th class="center">Jml</th>
+                                <th class="right">Harga Beli</th>
+                                <th class="right">Total Modal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-expenses-list">
+                            <tr><td colspan="5" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-receipt" style="font-size:28px;display:block;margin-bottom:10px;"></i>Belum ada pengeluaran.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end tab-inventori -->
+
+    <!-- ══════════ TAB: RIWAYAT ══════════ -->
+    <div id="tab-riwayat" class="tab-panel">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-icon" style="background:var(--violet);"><i class="fas fa-history"></i></div>
+                    <div>
+                        <h2>Semua Riwayat Transaksi Fotocopy</h2>
+                        <p>Seluruh transaksi fotocopy yang pernah dicatat</p>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button onclick="fcExportExcel()" class="btn btn-emerald">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button onclick="fcResetTransactions()" class="btn btn-rose">
+                        <i class="fas fa-trash-alt"></i> Reset
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-scroll" style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Item Dibeli</th>
+                                <th class="center">Qty</th>
+                                <th class="right">Subtotal</th>
+                                <th class="right">Diskon</th>
+                                <th class="right">Total Bayar</th>
+                                <th class="right">Untung Bersih</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-tx-all-list">
+                            <tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-history" style="font-size:28px;display:block;margin-bottom:10px;"></i>Belum ada transaksi.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div><!-- end tab-riwayat -->
+
+</div><!-- end page-content -->
+</main>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="bnav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+        <a href="pos.html" class="bnav-item"><i class="fas fa-wrench"></i><span>Kasir</span></a>
+        <a href="inventory.html" class="bnav-item"><i class="fas fa-boxes"></i><span>Inventori</span></a>
+        <a href="fotocopy.html" class="bnav-item active bnav-violet"><i class="fas fa-print"></i><span>Fotocopy</span></a>
+    </div>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── Tab Switcher ─────────────────────────────────────
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Discount Type ─────────────────────────────────────
+let discType = 'persen';
+function setDiscType(type) {
+    discType = type;
+    document.getElementById('disc-btn-persen').classList.toggle('active', type === 'persen');
+    document.getElementById('disc-btn-nominal').classList.toggle('active', type === 'nominal');
+    document.getElementById('disc-label').textContent = type === 'persen' ? 'Besar Diskon (%)' : 'Besar Diskon (Rp)';
+    document.getElementById('disc-prefix').textContent = type === 'persen' ? '%' : 'Rp';
+    document.getElementById('fc-discount').value = 0;
+    if (typeof fcUpdateCart === 'function') fcUpdateCart();
+}
+function clearDiscount() {
+    document.getElementById('fc-discount').value = 0;
+    if (typeof fcUpdateCart === 'function') fcUpdateCart();
+}
+function onFcItemChange() {
+    const val = document.getElementById('fc-item').value;
+    document.getElementById('fc-jasa-manual-container').style.display = val === '__jasa__' ? 'block' : 'none';
+}
+</script>
+<script type="module" src="js/fotocopy.js"></script>
+</body>
+</html>
