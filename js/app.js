@@ -30,6 +30,7 @@ let state = {
     transactions:         [],
     expenses:             [],
     fotocopyTransactions: [],
+    fotocopyExpenses:     [],
     workers: [
         { id: 'mechanic', name: 'Bapak A (Bengkel)', salaryToday: 0 },
         { id: 'steam',    name: 'Bapak B (Steam)',   salaryToday: 0 }
@@ -79,6 +80,12 @@ function loadStateFirebase() {
     // Fotocopy transactions (for dashboard profit card)
     onSnapshot(collection(db, "fotocopy_transactions"), snapshot => {
         state.fotocopyTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderDashboard();
+    });
+
+    // Fotocopy expenses (for dashboard total expense)
+    onSnapshot(collection(db, "fotocopy_expenses"), snapshot => {
+        state.fotocopyExpenses = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderDashboard();
     });
 }
@@ -178,6 +185,13 @@ function renderDashboard() {
 
     // ── Aggregate expenses ────────────────────────────────────────────────
     state.expenses.forEach(e => {
+        if (e.date < filterStart || e.date > filterEnd) return;
+        totalExpenseAmount += parseFloat(e.totalExpense) || 0;
+        totalExpenseQty    += parseInt(e.qty) || 0;
+    });
+
+    // ── Aggregate fotocopy expenses ───────────────────────────────────────
+    state.fotocopyExpenses.forEach(e => {
         if (e.date < filterStart || e.date > filterEnd) return;
         totalExpenseAmount += parseFloat(e.totalExpense) || 0;
         totalExpenseQty    += parseInt(e.qty) || 0;
