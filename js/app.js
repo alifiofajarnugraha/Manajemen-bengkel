@@ -336,6 +336,9 @@ function renderInventory() {
         }
     }
 
+    // Re-apply search filter if active
+    if (typeof filterInventoryTable === 'function') filterInventoryTable();
+
     if (selectPos) {
         selectPos.innerHTML = '<option value="">-- Tanpa Barang (Jasa Saja) --</option>';
         state.inventory

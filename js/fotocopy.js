@@ -356,6 +356,8 @@ function renderFcInventory() {
 
     if (fcState.inventory.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Belum ada barang di inventori.</td></tr>';
+        // Re-apply search filter if active
+        if (typeof filterFcInventoryTable === 'function') filterFcInventoryTable();
         return;
     }
 
@@ -378,6 +380,9 @@ function renderFcInventory() {
             </td>`;
         tbody.appendChild(tr);
     });
+
+    // Re-apply search filter if active
+    if (typeof filterFcInventoryTable === 'function') filterFcInventoryTable();
 }
 
 // ── Render: Expenses Table ───────────────────────────────────────────────────

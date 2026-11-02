@@ -142,6 +142,18 @@ a { text-decoration: none; }
 .bnav-item.active { color: #fff; }
 .bnav-item.active.bnav-violet i { color: #c4b5fd; }
 
+/* Search Bar */
+.search-bar-wrap { padding: 14px 22px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search-input-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none; }
+.search-input { width: 100%; padding: 11px 16px 11px 38px; border: 2px solid var(--border); border-radius: 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #f8fafc; outline: none; transition: border-color 0.18s, background 0.18s; }
+.search-input:focus { border-color: var(--violet); background: white; }
+.search-input::placeholder { color: #cbd5e1; }
+.search-count { font-size: 12px; color: #64748b; font-weight: 600; white-space: nowrap; }
+.search-clear-btn { background: #f1f5f9; border: none; border-radius: 8px; padding: 9px 14px; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.15s; display: none; }
+.search-clear-btn:hover { background: #e2e8f0; color: #374151; }
+.no-results { text-align: center; padding: 40px; color: #94a3b8; }
+
 /* Responsive */
 @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding-bottom: 80px; } .bottom-nav { display: block; } .page-content { padding: 14px; gap: 14px; } .form-grid-2 { grid-template-columns: 1fr; } .kasir-grid { grid-template-columns: 1fr !important; } }
 @media (max-width: 600px) { .table-scroll { overflow-x: auto; } .tab-bar { width: 100%; } .tab-btn { flex: 1; justify-content: center; padding: 10px 12px; font-size: 12px; } }
@@ -449,7 +461,16 @@ a { text-decoration: none; }
                     </div>
                 </div>
             </div>
-            <div class="card-body" style="padding:0;">
+            <!-- Search Bar -->
+            <div class="search-bar-wrap">
+                <div class="search-input-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="fc-inv-search" class="search-input" placeholder="Cari nama barang atau kategori..." oninput="filterFcInventoryTable()">
+                </div>
+                <button id="fc-inv-search-clear" class="search-clear-btn" onclick="clearFcInvSearch()"><i class="fas fa-times"></i> Hapus</button>
+                <span id="fc-inv-search-count" class="search-count" style="display:none;"></span>
+            </div>
+            <div class="card-body" style="padding:0;padding-top:14px;">
                 <div class="table-scroll" style="overflow-x:auto;">
                     <table class="data-table">
                         <thead>
@@ -588,6 +609,61 @@ function clearDiscount() {
 function onFcItemChange() {
     const val = document.getElementById('fc-item').value;
     document.getElementById('fc-jasa-manual-container').style.display = val === '__jasa__' ? 'block' : 'none';
+}
+
+// ── Search: Fotocopy Inventory ────────────────────────
+function filterFcInventoryTable() {
+    const query      = document.getElementById('fc-inv-search').value.toLowerCase().trim();
+    const rows       = document.querySelectorAll('#fc-inventory-list tr');
+    const clearBtn   = document.getElementById('fc-inv-search-clear');
+    const countLabel = document.getElementById('fc-inv-search-count');
+
+    clearBtn.style.display = query ? 'inline-flex' : 'none';
+
+    let visible = 0;
+    let hasDataRows = false;
+
+    rows.forEach(tr => {
+        if (tr.id === 'fc-inv-no-result') return;
+        if (tr.querySelector('td[colspan]')) {
+            tr.style.display = query ? 'none' : '';
+            return;
+        }
+        hasDataRows = true;
+        const text  = tr.textContent.toLowerCase();
+        const match = text.includes(query);
+        tr.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+
+    if (query && hasDataRows) {
+        countLabel.style.display = 'inline';
+        countLabel.textContent = `${visible} barang ditemukan`;
+        let noResultRow = document.getElementById('fc-inv-no-result');
+        if (visible === 0) {
+            if (!noResultRow) {
+                noResultRow = document.createElement('tr');
+                noResultRow.id = 'fc-inv-no-result';
+                noResultRow.innerHTML = `<td colspan="7" class="no-results"><i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.4;"></i>Tidak ada barang yang cocok dengan "${query}"</td>`;
+                document.getElementById('fc-inventory-list').appendChild(noResultRow);
+            } else {
+                noResultRow.querySelector('td').innerHTML = `<i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.4;"></i>Tidak ada barang yang cocok dengan "${query}"`;
+                noResultRow.style.display = '';
+            }
+        } else if (noResultRow) {
+            noResultRow.style.display = 'none';
+        }
+    } else {
+        countLabel.style.display = 'none';
+        const noResultRow = document.getElementById('fc-inv-no-result');
+        if (noResultRow) noResultRow.style.display = 'none';
+    }
+}
+
+function clearFcInvSearch() {
+    document.getElementById('fc-inv-search').value = '';
+    filterFcInventoryTable();
+    document.getElementById('fc-inv-search').focus();
 }
 </script>
 <script type="module" src="js/fotocopy.js"></script>
