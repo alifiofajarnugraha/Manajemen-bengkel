@@ -4,6 +4,37 @@ import {
     updateDoc, doc, deleteDoc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ── Notification Modal Control ─────────────────────────────────────────────────────────────────────────────
+window.toggleFcNotificationModal = function () {
+    const backdrop = document.getElementById('fc-notif-modal-backdrop');
+    if (backdrop) backdrop.classList.toggle('active');
+};
+
+window.openFcNotificationModal = function () {
+    const backdrop = document.getElementById('fc-notif-modal-backdrop');
+    if (backdrop) backdrop.classList.add('active');
+};
+
+window.closeFcNotificationModal = function () {
+    const backdrop = document.getElementById('fc-notif-modal-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+};
+
+window.closeFcNotificationModalOnBackdrop = function (event) {
+    if (event.target.id === 'fc-notif-modal-backdrop') {
+        closeFcNotificationModal();
+    }
+};
+
+// ── Sidebar Notif Link Handler ─────────────────────────────────────────────────────────────────────────────
+const sidebarFcNotifLink = document.getElementById('sidebar-fc-notif-link');
+if (sidebarFcNotifLink) {
+    sidebarFcNotifLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        toggleFcNotificationModal();
+    });
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getCurrentDateString() {
     const d = new Date();
@@ -36,7 +67,7 @@ function loadFcFirebase() {
         fcState.inventory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderFcInventory();
         renderFcItemSelect();
-        renderFcLowStockAlert();
+        renderFcNotifModalList();
     });
 
     onSnapshot(collection(db, "fotocopy_transactions"), snap => {
@@ -274,12 +305,14 @@ window.fcCheckout = async function () {
         fcUpdateCart();
 
         // Show success notification
-        showFcNotification(`<div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:500;">
-            <i class="fas fa-check-circle" style="margin-right:6px;"></i>
-            <strong>Transaksi berhasil!</strong> Total bayar: ${formatRupiah(totalBayar)}${discountAmount > 0 ? `, diskon: ${formatRupiah(discountAmount)}` : ''}.
-        </div>`);
-
-        setTimeout(() => showFcNotification(''), 4000);
+        const notifArea = document.getElementById('fc-notification-area');
+        if (notifArea) {
+            notifArea.innerHTML = `<div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:500;">
+                <i class="fas fa-check-circle" style="margin-right:6px;"></i>
+                <strong>Transaksi berhasil!</strong> Total bayar: ${formatRupiah(totalBayar)}${discountAmount > 0 ? `, diskon: ${formatRupiah(discountAmount)}` : ''}.
+            </div>`;
+            setTimeout(() => { notifArea.innerHTML = ''; }, 4000);
+        }
 
     } catch (err) {
         alert('Error saat checkout: ' + err.message);
@@ -412,22 +445,155 @@ function renderFcExpenses() {
 }
 
 // ── Low Stock Notification ───────────────────────────────────────────────────
-function renderFcLowStockAlert() {
-    const lowItems = fcState.inventory.filter(i => (parseInt(i.stock) || 0) < 5);
-    if (lowItems.length > 0) {
-        const html = lowItems.map(i =>
-            `<div style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:13px;font-weight:500;">
-                <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
-                <strong>Stok Rendah:</strong> <b>${i.name}</b> hanya tersisa ${i.stock}. Segera restock!
-            </div>`
-        ).join('');
-        showFcNotification(html);
-    }
+let fcNotifSearchQuery = '';
+let activeFcNotifTab = 'all';
+
+function filterFcNotifTab(tabName) {
+    activeFcNotifTab = tabName;
+    document.querySelectorAll('#fc-notif-modal-backdrop .notif-tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    renderFcNotifModalList();
 }
 
-function showFcNotification(html) {
-    const el = document.getElementById('fc-notification-area');
-    if (el) el.innerHTML = html;
+function filterFcNotifSearch(query) {
+    fcNotifSearchQuery = (query || '').toLowerCase().trim();
+    renderFcNotifModalList();
+}
+
+function renderFcNotifModalList() {
+    const container = document.getElementById('fc-notif-items-container');
+    const badge = document.getElementById('fc-notif-badge');
+    const sidebarBadge = document.getElementById('sidebar-fc-notif-badge');
+    const btn = document.getElementById('btn-fc-notif');
+    const sidebarBtn = document.getElementById('sidebar-fc-notif-link');
+    const totalBadge = document.getElementById('fc-notif-total-badge');
+    const tabAllCount = document.getElementById('fc-notif-tab-all-count');
+    const tabLowCount = document.getElementById('fc-notif-tab-low-count');
+
+    if (!container) return;
+
+    const allItems = fcState.inventory || [];
+    const lowItems = allItems.filter(i => (parseInt(i.stock) || 0) < 5);
+    const outItems = allItems.filter(i => (parseInt(i.stock) || 0) <= 0);
+    
+    // Update badges
+    if (badge) {
+        badge.textContent = lowItems.length;
+        badge.style.display = lowItems.length > 0 ? '' : 'none';
+    }
+    if (sidebarBadge) {
+        sidebarBadge.textContent = lowItems.length;
+        sidebarBadge.style.display = lowItems.length > 0 ? '' : 'none';
+    }
+    if (totalBadge) {
+        totalBadge.textContent = `${lowItems.length} Perlu Restock`;
+        totalBadge.style.display = lowItems.length > 0 ? '' : 'none';
+    }
+    if (tabAllCount) tabAllCount.textContent = lowItems.length;
+    if (tabLowCount) tabLowCount.textContent = lowItems.length;
+    
+    if (btn) {
+        if (lowItems.length > 0) btn.classList.add('has-alert');
+        else btn.classList.remove('has-alert');
+    }
+    if (sidebarBtn) {
+        sidebarBtn.style.background = lowItems.length > 0 ? 'rgba(244, 63, 94, 0.15)' : '';
+    }
+
+    // Filter by tab
+    let filteredItems = lowItems;
+    if (activeFcNotifTab === 'low') {
+        filteredItems = lowItems;
+    }
+    
+    // Filter by search
+    if (fcNotifSearchQuery) {
+        filteredItems = filteredItems.filter(i =>
+            (i.name || '').toLowerCase().includes(fcNotifSearchQuery) ||
+            (i.category || '').toLowerCase().includes(fcNotifSearchQuery)
+        );
+    }
+    
+    // Sort: out of stock first, then ascending stock
+    filteredItems.sort((a, b) => {
+        const stockA = parseInt(a.stock) || 0;
+        const stockB = parseInt(b.stock) || 0;
+        return stockA - stockB;
+    });
+
+    if (filteredItems.length === 0) {
+        if (fcNotifSearchQuery) {
+            container.innerHTML = `
+                <div class="notif-empty-state">
+                    <div class="notif-empty-icon" style="background:#f1f5f9;color:#94a3b8;">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px;">Tidak Ada Hasil</h3>
+                    <p style="font-size:12px;color:#64748b;">Tidak ada barang stok rendah yang sesuai dengan kata kunci "${fcNotifSearchQuery}".</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="notif-empty-state">
+                    <div class="notif-empty-icon" style="background:#dcfce7;color:#16a34a;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:6px;">Semua Stok Aman!</h3>
+                    <p style="font-size:13px;color:#64748b;max-width:380px;line-height:1.6;">
+                        Tidak ada barang yang memiliki stok di bawah batas minimum (5 unit).
+                    </p>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    container.innerHTML = filteredItems.map(item => {
+        const stock = parseInt(item.stock) || 0;
+        const isOutOfStock = stock <= 0;
+
+        return `
+            <div class="notif-item-card ${isOutOfStock ? 'is-out-of-stock' : 'is-low-stock'}">
+                <div class="notif-item-left">
+                    <div class="notif-item-icon icon-fc">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <div class="notif-item-details">
+                        <div class="notif-item-title-row">
+                            <span class="notif-item-name">${escapeHtml(item.name || 'Tanpa Nama')}</span>
+                            <span class="notif-tag notif-tag-fc">Fotocopy</span>
+                            ${item.category ? `<span class="notif-tag notif-tag-cat">${escapeHtml(item.category)}</span>` : ''}
+                        </div>
+                        <div class="notif-item-sub">
+                            <span>Harga Beli: <b>${formatRupiah(item.buyPrice)}</b></span>
+                            <span class="notif-dot">&bull;</span>
+                            <span>Harga Jual: <b>${formatRupiah(item.sellPrice)}</b></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="notif-item-right">
+                    <div class="notif-stock-badge ${isOutOfStock ? 'stock-badge-out' : 'stock-badge-low'}">
+                        <i class="fas ${isOutOfStock ? 'fa-times-circle' : 'fa-exclamation-triangle'}"></i>
+                        <span>${isOutOfStock ? 'Stok Habis (0)' : `Sisa ${stock} pcs`}</span>
+                    </div>
+                    <a href="#" class="notif-btn-restock" title="Pergi ke form restock" onclick="event.preventDefault(); closeFcNotificationModal(); document.getElementById('fc-add-item-btn').click();">
+                        Restock <i class="fas fa-chevron-right" style="font-size:10px;margin-left:4px;"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ── Inventory CRUD ───────────────────────────────────────────────────────────
@@ -621,10 +787,13 @@ window.fcResetTransactions = async function () {
             ...txSnap.docs.map(d  => deleteDoc(doc(db, "fotocopy_transactions", d.id))),
             ...expSnap.docs.map(d => deleteDoc(doc(db, "fotocopy_expenses",     d.id)))
         ]);
-        showFcNotification(`<div style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:500;">
-            <i class="fas fa-trash-alt" style="margin-right:6px;"></i>
-            <strong>Reset selesai.</strong> Semua data transaksi dan pengeluaran fotocopy telah dihapus.
-        </div>`);
+        const notifArea = document.getElementById('fc-notification-area');
+        if (notifArea) {
+            notifArea.innerHTML = `<div style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:500;">
+                <i class="fas fa-trash-alt" style="margin-right:6px;"></i>
+                <strong>Reset selesai.</strong> Semua data transaksi dan pengeluaran fotocopy telah dihapus.
+            </div>`;
+        }
     } catch (err) {
         alert('Error saat reset: ' + err.message);
     }
