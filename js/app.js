@@ -27,6 +27,7 @@ function formatRupiah(number) {
 
 let state = {
     inventory:            [],
+    fotocopyInventory:    [],
     transactions:         [],
     expenses:             [],
     fotocopyTransactions: [],
@@ -45,6 +46,13 @@ function loadStateFirebase() {
         state.inventory = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         renderInventory();
         renderDashboard();
+        updateStockNotifications();
+    });
+
+    // Fotocopy inventory (for low stock alerts)
+    onSnapshot(collection(db, "fotocopy_inventory"), snapshot => {
+        state.fotocopyInventory = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateStockNotifications();
     });
 
     // Transactions
@@ -90,7 +98,10 @@ function loadStateFirebase() {
     });
 }
 
-// ── Notification helper ──────────────────────────────────────────────────────
+// ── Notification helper & Notification Center ────────────────────────────────
+
+let activeNotifTab = 'all';
+let notifSearchQuery = '';
 
 function showNotification(html) {
     const el = document.getElementById('notification-area');
@@ -112,6 +123,242 @@ function buildAlertHtml(type, title, message) {
                 <strong>${title}</strong> ${message}
             </div>`;
 }
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function updateStockNotifications() {
+    const bengkelLow = (state.inventory || []).filter(i => (parseInt(i.stock) || 0) < 5);
+    const fcLow = (state.fotocopyInventory || []).filter(i => (parseInt(i.stock) || 0) < 5);
+    const totalCount = bengkelLow.length + fcLow.length;
+
+    // Header Bell Badge
+    const headerBadge = document.getElementById('header-notif-badge');
+    const headerBtn = document.getElementById('btn-header-notif');
+    if (headerBadge) {
+        if (totalCount > 0) {
+            headerBadge.textContent = totalCount > 99 ? '99+' : totalCount;
+            headerBadge.style.display = 'flex';
+            if (headerBtn) headerBtn.classList.add('has-alert');
+        } else {
+            headerBadge.style.display = 'none';
+            if (headerBtn) headerBtn.classList.remove('has-alert');
+        }
+    }
+
+    // Sidebar Badge
+    const sidebarBadge = document.getElementById('sidebar-notif-badge');
+    if (sidebarBadge) {
+        if (totalCount > 0) {
+            sidebarBadge.textContent = totalCount > 99 ? '99+' : totalCount;
+            sidebarBadge.style.display = 'inline-block';
+        } else {
+            sidebarBadge.style.display = 'none';
+        }
+    }
+
+    // Mobile Bottom Nav Badge
+    const bnavBadge = document.getElementById('bnav-notif-badge');
+    if (bnavBadge) {
+        if (totalCount > 0) {
+            bnavBadge.textContent = totalCount > 99 ? '99+' : totalCount;
+            bnavBadge.style.display = 'flex';
+        } else {
+            bnavBadge.style.display = 'none';
+        }
+    }
+
+    // Modal Header Total Badge
+    const totalModalBadge = document.getElementById('notif-total-badge');
+    if (totalModalBadge) {
+        if (totalCount > 0) {
+            totalModalBadge.textContent = `${totalCount} Perlu Restock`;
+            totalModalBadge.className = 'notif-chip-danger';
+        } else {
+            totalModalBadge.textContent = 'Semua Stok Aman';
+            totalModalBadge.className = 'notif-chip-success';
+        }
+    }
+
+    // Tab counters
+    const elTabAll = document.getElementById('notif-tab-all-count');
+    const elTabBengkel = document.getElementById('notif-tab-bengkel-count');
+    const elTabFc = document.getElementById('notif-tab-fc-count');
+    if (elTabAll) elTabAll.textContent = totalCount;
+    if (elTabBengkel) elTabBengkel.textContent = bengkelLow.length;
+    if (elTabFc) elTabFc.textContent = fcLow.length;
+
+    renderNotifModalList();
+}
+
+function openNotificationModal() {
+    const backdrop = document.getElementById('notif-modal-backdrop');
+    if (backdrop) {
+        backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        renderNotifModalList();
+    }
+}
+
+function closeNotificationModal() {
+    const backdrop = document.getElementById('notif-modal-backdrop');
+    if (backdrop) {
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function toggleNotificationModal() {
+    const backdrop = document.getElementById('notif-modal-backdrop');
+    if (backdrop) {
+        if (backdrop.classList.contains('active')) {
+            closeNotificationModal();
+        } else {
+            openNotificationModal();
+        }
+    }
+}
+
+function closeNotificationModalOnBackdrop(event) {
+    if (event && event.target && event.target.id === 'notif-modal-backdrop') {
+        closeNotificationModal();
+    }
+}
+
+function filterNotifTab(tabName) {
+    activeNotifTab = tabName;
+    document.querySelectorAll('.notif-tab').forEach(tab => {
+        if (tab.getAttribute('data-tab') === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    renderNotifModalList();
+}
+
+function filterNotifSearch(query) {
+    notifSearchQuery = (query || '').toLowerCase().trim();
+    renderNotifModalList();
+}
+
+function renderNotifModalList() {
+    const container = document.getElementById('notif-items-container');
+    if (!container) return;
+
+    const bengkelItems = (state.inventory || [])
+        .filter(i => (parseInt(i.stock) || 0) < 5)
+        .map(i => ({ ...i, type: 'bengkel', typeLabel: 'Bengkel', link: 'inventory.html' }));
+
+    const fcItems = (state.fotocopyInventory || [])
+        .filter(i => (parseInt(i.stock) || 0) < 5)
+        .map(i => ({ ...i, type: 'fotocopy', typeLabel: 'Fotocopy', link: 'fotocopy.html' }));
+
+    let allItems = [];
+    if (activeNotifTab === 'bengkel') {
+        allItems = bengkelItems;
+    } else if (activeNotifTab === 'fotocopy') {
+        allItems = fcItems;
+    } else {
+        allItems = [...bengkelItems, ...fcItems];
+    }
+
+    if (notifSearchQuery) {
+        allItems = allItems.filter(i =>
+            (i.name || '').toLowerCase().includes(notifSearchQuery) ||
+            (i.category || '').toLowerCase().includes(notifSearchQuery)
+        );
+    }
+
+    // Sort: 0 stock (out of stock) first, then ascending stock
+    allItems.sort((a, b) => {
+        const stockA = parseInt(a.stock) || 0;
+        const stockB = parseInt(b.stock) || 0;
+        return stockA - stockB;
+    });
+
+    if (allItems.length === 0) {
+        if (notifSearchQuery) {
+            container.innerHTML = `
+                <div class="notif-empty-state">
+                    <div class="notif-empty-icon" style="background:#f1f5f9;color:#94a3b8;">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px;">Tidak Ada Hasil</h3>
+                    <p style="font-size:12px;color:#64748b;">Tidak ada barang stok rendah yang sesuai dengan kata kunci "${escapeHtml(notifSearchQuery)}".</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="notif-empty-state">
+                    <div class="notif-empty-icon" style="background:#dcfce7;color:#16a34a;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:6px;">Semua Stok Aman!</h3>
+                    <p style="font-size:13px;color:#64748b;max-width:380px;line-height:1.6;">
+                        ${activeNotifTab === 'all' 
+                            ? 'Tidak ada barang yang memiliki stok di bawah batas minimum (5 unit).' 
+                            : `Tidak ada barang ${activeNotifTab === 'bengkel' ? 'bengkel' : 'fotocopy'} yang menipis.`}
+                    </p>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    container.innerHTML = allItems.map(item => {
+        const stock = parseInt(item.stock) || 0;
+        const isOutOfStock = stock <= 0;
+        const isBengkel = item.type === 'bengkel';
+
+        return `
+            <div class="notif-item-card ${isOutOfStock ? 'is-out-of-stock' : 'is-low-stock'}">
+                <div class="notif-item-left">
+                    <div class="notif-item-icon ${isBengkel ? 'icon-bengkel' : 'icon-fc'}">
+                        <i class="fas ${isBengkel ? 'fa-wrench' : 'fa-print'}"></i>
+                    </div>
+                    <div class="notif-item-details">
+                        <div class="notif-item-title-row">
+                            <span class="notif-item-name">${escapeHtml(item.name || 'Tanpa Nama')}</span>
+                            <span class="notif-tag ${isBengkel ? 'notif-tag-bengkel' : 'notif-tag-fc'}">
+                                ${item.typeLabel}
+                            </span>
+                            ${item.category ? `<span class="notif-tag notif-tag-cat">${escapeHtml(item.category)}</span>` : ''}
+                        </div>
+                        <div class="notif-item-sub">
+                            <span>Harga Beli: <b>${formatRupiah(item.buyPrice)}</b></span>
+                            <span class="notif-dot">&bull;</span>
+                            <span>Harga Jual: <b>${formatRupiah(item.sellPrice)}</b></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="notif-item-right">
+                    <div class="notif-stock-badge ${isOutOfStock ? 'stock-badge-out' : 'stock-badge-low'}">
+                        <i class="fas ${isOutOfStock ? 'fa-times-circle' : 'fa-exclamation-triangle'}"></i>
+                        <span>${isOutOfStock ? 'Stok Habis (0)' : `Sisa ${stock} pcs`}</span>
+                    </div>
+                    <a href="${item.link}" class="notif-btn-restock" title="Pergi ke halaman ${item.typeLabel}">
+                        Restock <i class="fas fa-chevron-right" style="font-size:10px;margin-left:4px;"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeNotificationModal();
+    }
+});
 
 // ── Dashboard render ─────────────────────────────────────────────────────────
 
@@ -285,18 +532,8 @@ function renderDashboard() {
         });
     }
 
-    // ── Low stock notifications ───────────────────────────────────────────
-    const lowStockItems = state.inventory.filter(i => (parseInt(i.stock) || 0) < 5);
-    if (lowStockItems.length > 0) {
-        const html = lowStockItems.map(i =>
-            buildAlertHtml('warning',
-                'Stok Rendah:',
-                `<b>${i.name}</b> hanya tersisa ${i.stock}. Segera restock!`)
-        ).join('');
-        showNotification(html);
-    } else {
-        showNotification('');
-    }
+    // ── Low stock notifications (handled in notification bell modal) ───────
+    updateStockNotifications();
 }
 
 // ── Inventory render ─────────────────────────────────────────────────────────
@@ -803,10 +1040,16 @@ async function resetTransactions() {
 loadStateFirebase();
 
 // Expose to HTML onclick handlers
-window.exportToExcel    = exportToExcel;
-window.resetTransactions = resetTransactions;
-window.applyDateFilter  = applyDateFilter;
-window.editItem         = editItem;
-window.deleteItem       = deleteItem;
-window.removeCart       = removeCart;
-window.renderExpenses   = renderExpenses;
+window.exportToExcel                    = exportToExcel;
+window.resetTransactions                = resetTransactions;
+window.applyDateFilter                  = applyDateFilter;
+window.editItem                         = editItem;
+window.deleteItem                       = deleteItem;
+window.removeCart                       = removeCart;
+window.renderExpenses                   = renderExpenses;
+window.openNotificationModal            = openNotificationModal;
+window.closeNotificationModal           = closeNotificationModal;
+window.toggleNotificationModal          = toggleNotificationModal;
+window.closeNotificationModalOnBackdrop = closeNotificationModalOnBackdrop;
+window.filterNotifTab                   = filterNotifTab;
+window.filterNotifSearch                = filterNotifSearch;
